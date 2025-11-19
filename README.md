@@ -72,8 +72,6 @@ func main() {
             fmt.Printf("API Error: %s\n", apiErr.Error())
         } else if netErr, ok := err.(*errors.NetworkException); ok {
             fmt.Printf("Network Error: %s\n", netErr.Error())
-        } else {
-            fmt.Printf("Error: %s\n", err.Error())
         }
         return
     }
@@ -117,6 +115,7 @@ package main
 import (
     "io"
     "net/http"
+    "fmt"
     "github.com/tinker/tinker-payments-go-sdk/tinker"
 )
 
@@ -139,19 +138,15 @@ func webhookHandler(w http.ResponseWriter, r *http.Request) {
     if event.IsPaymentEvent() {
         paymentData := event.PaymentData()
         // Handle payment.completed, payment.failed, etc.
-        fmt.Printf("Payment event: %s\n", event.Type)
     } else if event.IsSubscriptionEvent() {
         subscriptionData := event.SubscriptionData()
         // Handle subscription.created, subscription.cancelled, etc.
-        fmt.Printf("Subscription event: %s\n", event.Type)
     } else if event.IsInvoiceEvent() {
         invoiceData := event.InvoiceData()
         // Handle invoice.paid, invoice.failed
-        fmt.Printf("Invoice event: %s\n", event.Type)
     } else if event.IsSettlementEvent() {
         settlementData := event.SettlementData()
         // Handle settlement.processed
-        fmt.Printf("Settlement event: %s\n", event.Type)
     }
     
     // Access event details
@@ -198,24 +193,6 @@ payments := tinker.NewPayments(
     "your-secret-key",
     customClient,
 )
-```
-
-## Error Handling
-
-```go
-transaction, err := payments.Transactions().Initiate(request)
-if err != nil {
-    switch e := err.(type) {
-    case *errors.ApiException:
-        fmt.Printf("API Error (code %d): %s\n", e.GetCode(), e.Error())
-    case *errors.NetworkException:
-        fmt.Printf("Network Error (code %d): %s\n", e.GetCode(), e.Error())
-    case *errors.AuthenticationException:
-        fmt.Printf("Auth Error (code %d): %s\n", e.GetCode(), e.Error())
-    default:
-        fmt.Printf("Error: %s\n", err.Error())
-    }
-}
 ```
 
 ## Documentation
