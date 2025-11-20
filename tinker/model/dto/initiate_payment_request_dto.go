@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"github.com/tinker/tinker-payments-go-sdk/tinker/types"
+	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/types"
 )
 
 type InitiatePaymentRequestDto struct {

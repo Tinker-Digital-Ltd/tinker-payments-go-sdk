@@ -3,8 +3,8 @@ package webhook
 import (
 	"encoding/json"
 
-	"github.com/tinker/tinker-payments-go-sdk/tinker/errors"
-	"github.com/tinker/tinker-payments-go-sdk/tinker/model"
+	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/errors"
+	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/model"
 )
 
 type Handler struct{}

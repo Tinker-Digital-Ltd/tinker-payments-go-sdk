@@ -1,9 +1,9 @@
 package webhook
 
 import (
-	"github.com/tinker/tinker-payments-go-sdk/tinker/errors"
-	"github.com/tinker/tinker-payments-go-sdk/tinker/model"
-	webhookDto "github.com/tinker/tinker-payments-go-sdk/tinker/webhook/dto"
+	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/errors"
+	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/model"
+	webhookDto "github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/webhook/dto"
 )
 
 type Event struct {

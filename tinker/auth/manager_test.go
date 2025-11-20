@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinker/tinker-payments-go-sdk/tinker/config"
-	"github.com/tinker/tinker-payments-go-sdk/tinker/http"
+	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/config"
+	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/http"
 )
 
 func TestNewManager(t *testing.T) {
@@ -95,7 +95,7 @@ func TestManager_tokenValid(t *testing.T) {
 
 type mockHttpClient struct {
 	response map[string]interface{}
-	err     error
+	err      error
 }
 
 func (m *mockHttpClient) Post(url string, headers map[string]string, body []byte) (*http.Response, error) {
@@ -111,4 +111,3 @@ func (m *mockHttpClient) Post(url string, headers map[string]string, body []byte
 
 	return http.NewResponse(200, []byte(responseBody), nil), nil
 }
-

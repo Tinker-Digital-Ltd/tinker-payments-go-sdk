@@ -1,11 +1,11 @@
 package tinker
 
 import (
-	"github.com/tinker/tinker-payments-go-sdk/tinker/api"
-	"github.com/tinker/tinker-payments-go-sdk/tinker/auth"
-	"github.com/tinker/tinker-payments-go-sdk/tinker/config"
-	"github.com/tinker/tinker-payments-go-sdk/tinker/http"
-	"github.com/tinker/tinker-payments-go-sdk/tinker/webhook"
+	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/api"
+	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/auth"
+	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/config"
+	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/http"
+	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/webhook"
 )
 
 type Payments struct {

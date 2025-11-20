@@ -3,7 +3,7 @@ package dto
 import (
 	"testing"
 
-	"github.com/tinker/tinker-payments-go-sdk/tinker/types"
+	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/types"
 )
 
 func TestInitiatePaymentRequestDto_ToMap(t *testing.T) {
@@ -15,15 +15,15 @@ func TestInitiatePaymentRequestDto_ToMap(t *testing.T) {
 	}
 
 	dto := &InitiatePaymentRequestDto{
-		Amount:           100.00,
-		Currency:         "KES",
-		Gateway:          types.MPESA,
+		Amount:            100.00,
+		Currency:          "KES",
+		Gateway:           types.MPESA,
 		MerchantReference: "ORDER-123",
-		ReturnURL:        "https://example.com/return",
-		CustomerPhone:    &customerPhone,
-		CustomerEmail:    &customerEmail,
-		TransactionDesc:  &transactionDesc,
-		Metadata:         metadata,
+		ReturnURL:         "https://example.com/return",
+		CustomerPhone:     &customerPhone,
+		CustomerEmail:     &customerEmail,
+		TransactionDesc:   &transactionDesc,
+		Metadata:          metadata,
 	}
 
 	result := dto.ToMap()
@@ -59,11 +59,11 @@ func TestInitiatePaymentRequestDto_ToMap(t *testing.T) {
 
 func TestInitiatePaymentRequestDto_ToMap_OptionalFields(t *testing.T) {
 	dto := &InitiatePaymentRequestDto{
-		Amount:           100.00,
-		Currency:         "KES",
-		Gateway:          types.MPESA,
+		Amount:            100.00,
+		Currency:          "KES",
+		Gateway:           types.MPESA,
 		MerchantReference: "ORDER-123",
-		ReturnURL:        "https://example.com/return",
+		ReturnURL:         "https://example.com/return",
 	}
 
 	result := dto.ToMap()
@@ -81,4 +81,3 @@ func TestInitiatePaymentRequestDto_ToMap_OptionalFields(t *testing.T) {
 		t.Error("metadata should not be in map when nil")
 	}
 }
-

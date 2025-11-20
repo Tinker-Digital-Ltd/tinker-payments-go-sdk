@@ -3,7 +3,7 @@ package dto
 import (
 	"testing"
 
-	"github.com/tinker/tinker-payments-go-sdk/tinker/types"
+	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/types"
 )
 
 func TestQueryPaymentRequestDto_ToMap(t *testing.T) {
@@ -21,4 +21,3 @@ func TestQueryPaymentRequestDto_ToMap(t *testing.T) {
 		t.Errorf("gateway = %v, want mpesa", result["gateway"])
 	}
 }
-

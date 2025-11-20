@@ -5,11 +5,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tinker/tinker-payments-go-sdk/tinker/auth"
-	"github.com/tinker/tinker-payments-go-sdk/tinker/config"
-	"github.com/tinker/tinker-payments-go-sdk/tinker/http"
-	"github.com/tinker/tinker-payments-go-sdk/tinker/model/dto"
-	"github.com/tinker/tinker-payments-go-sdk/tinker/types"
+	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/auth"
+	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/config"
+	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/http"
+	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/model/dto"
+	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/types"
 )
 
 func TestNewTransactionManager(t *testing.T) {
@@ -31,8 +31,8 @@ func TestTransactionManager_Initiate(t *testing.T) {
 	mockClient := &mockHttpClient{
 		response: map[string]interface{}{
 			"payment_reference": "TXN-123",
-			"authorization_url":  "https://example.com/auth",
-			"status":             "pending",
+			"authorization_url": "https://example.com/auth",
+			"status":            "pending",
 		},
 	}
 	authMgr := auth.NewManager(cfg, mockClient)
@@ -40,12 +40,12 @@ func TestTransactionManager_Initiate(t *testing.T) {
 
 	customerPhone := "+254712345678"
 	request := &dto.InitiatePaymentRequestDto{
-		Amount:           100.00,
-		Currency:         "KES",
-		Gateway:          types.MPESA,
+		Amount:            100.00,
+		Currency:          "KES",
+		Gateway:           types.MPESA,
 		MerchantReference: "ORDER-123",
-		ReturnURL:        "https://example.com/return",
-		CustomerPhone:    &customerPhone,
+		ReturnURL:         "https://example.com/return",
+		CustomerPhone:     &customerPhone,
 	}
 
 	transaction, err := manager.Initiate(request)
@@ -64,11 +64,11 @@ func TestTransactionManager_Query(t *testing.T) {
 	cfg := config.NewConfiguration("public-key", "secret-key")
 	mockClient := &mockHttpClient{
 		response: map[string]interface{}{
-			"id":       "123",
+			"id":        "123",
 			"reference": "TXN-123",
-			"amount":   100.00,
-			"currency": "KES",
-			"status":   "success",
+			"amount":    100.00,
+			"currency":  "KES",
+			"status":    "success",
 		},
 	}
 	authMgr := auth.NewManager(cfg, mockClient)
@@ -93,7 +93,7 @@ func TestTransactionManager_Query(t *testing.T) {
 
 type mockHttpClient struct {
 	response map[string]interface{}
-	err     error
+	err      error
 }
 
 func (m *mockHttpClient) Post(url string, headers map[string]string, body []byte) (*http.Response, error) {
@@ -118,4 +118,3 @@ func (m *mockHttpClient) Post(url string, headers map[string]string, body []byte
 
 	return http.NewResponse(200, []byte(responseBody), nil), nil
 }
-

@@ -3,7 +3,7 @@ package model
 import (
 	"testing"
 
-	"github.com/tinker/tinker-payments-go-sdk/tinker/types"
+	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/types"
 )
 
 func TestNewTransaction_WithInitiationData(t *testing.T) {

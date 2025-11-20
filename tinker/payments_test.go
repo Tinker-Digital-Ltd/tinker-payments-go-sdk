@@ -3,7 +3,7 @@ package tinker
 import (
 	"testing"
 
-	"github.com/tinker/tinker-payments-go-sdk/tinker/http"
+	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/http"
 )
 
 func TestNewPayments(t *testing.T) {

@@ -6,9 +6,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/tinker/tinker-payments-go-sdk/tinker/config"
-	"github.com/tinker/tinker-payments-go-sdk/tinker/errors"
-	"github.com/tinker/tinker-payments-go-sdk/tinker/http"
+	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/config"
+	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/errors"
+	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/http"
 )
 
 type Manager struct {

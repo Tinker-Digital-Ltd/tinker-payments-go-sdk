@@ -5,7 +5,7 @@ Official Go SDK for [Tinker Payments API](https://payments.tinker.co.ke/docs).
 ## Installation
 
 ```bash
-go get github.com/tinker/tinker-payments-go-sdk
+go get github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk
 ```
 
 ## Requirements
@@ -19,7 +19,7 @@ go get github.com/tinker/tinker-payments-go-sdk
 package main
 
 import (
-    "github.com/tinker/tinker-payments-go-sdk/tinker"
+    "github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker"
 )
 
 func main() {
@@ -40,10 +40,10 @@ package main
 
 import (
     "fmt"
-    "github.com/tinker/tinker-payments-go-sdk/tinker"
-    "github.com/tinker/tinker-payments-go-sdk/tinker/types"
-    "github.com/tinker/tinker-payments-go-sdk/tinker/model/dto"
-    "github.com/tinker/tinker-payments-go-sdk/tinker/errors"
+    "github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker"
+    "github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/types"
+    "github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/model/dto"
+    "github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/errors"
 )
 
 func main() {
@@ -116,7 +116,7 @@ import (
     "io"
     "net/http"
     "fmt"
-    "github.com/tinker/tinker-payments-go-sdk/tinker"
+    "github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker"
 )
 
 func webhookHandler(w http.ResponseWriter, r *http.Request) {
@@ -205,7 +205,7 @@ After checking out the repo, run `go mod download` to install dependencies. Then
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/tinker/payments-go-sdk.
+Bug reports and pull requests are welcome on GitHub at https://github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk.
 
 ## License
 

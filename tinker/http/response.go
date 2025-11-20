@@ -3,7 +3,7 @@ package http
 import (
 	"encoding/json"
 
-	"github.com/tinker/tinker-payments-go-sdk/tinker/errors"
+	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/errors"
 )
 
 type Response struct {

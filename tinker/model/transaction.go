@@ -1,8 +1,8 @@
 package model
 
 import (
-	"github.com/tinker/tinker-payments-go-sdk/tinker/types"
-	"github.com/tinker/tinker-payments-go-sdk/tinker/model/dto"
+	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/model/dto"
+	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/types"
 )
 
 type Transaction struct {
