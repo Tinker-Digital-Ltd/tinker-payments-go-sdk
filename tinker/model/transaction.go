@@ -14,7 +14,13 @@ type Transaction struct {
 
 func NewTransaction(data map[string]interface{}) *Transaction {
 	txn := &Transaction{}
-
+	if _, hasPaymentRef := data["paymentReference"]; hasPaymentRef {
+		if _, hasID := data["id"]; !hasID {
+			txn.InitiationData = dto.NewInitiationDataDto(data)
+			txn.Status = txn.InitiationData.Status
+			return txn
+		}
+	}
 	if _, hasPaymentRef := data["payment_reference"]; hasPaymentRef {
 		if _, hasID := data["id"]; !hasID {
 			txn.InitiationData = dto.NewInitiationDataDto(data)
@@ -46,22 +52,10 @@ func NewTransaction(data map[string]interface{}) *Transaction {
 	default:
 		txn.Status = types.PENDING
 	}
-
 	return txn
 }
 
-func (t *Transaction) IsSuccessful() bool {
-	return t.Status == types.SUCCESS
-}
-
-func (t *Transaction) IsPending() bool {
-	return t.Status == types.PENDING
-}
-
-func (t *Transaction) IsCancelled() bool {
-	return t.Status == types.CANCELLED
-}
-
-func (t *Transaction) IsFailed() bool {
-	return t.Status == types.FAILED
-}
+func (t *Transaction) IsSuccessful() bool { return t.Status == types.SUCCESS }
+func (t *Transaction) IsPending() bool    { return t.Status == types.PENDING }
+func (t *Transaction) IsCancelled() bool  { return t.Status == types.CANCELLED }
+func (t *Transaction) IsFailed() bool     { return t.Status == types.FAILED }

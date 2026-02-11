@@ -7,15 +7,11 @@ import (
 )
 
 func TestQueryPaymentRequestDto_ToMap(t *testing.T) {
-	dto := &QueryPaymentRequestDto{
-		PaymentReference: "TXN-123",
-		Gateway:          types.MPESA,
-	}
-
+	dto := &QueryPaymentRequestDto{PaymentReference: "TXN-123", Gateway: types.MPESA}
 	result := dto.ToMap()
 
-	if result["payment_reference"] != "TXN-123" {
-		t.Errorf("payment_reference = %v, want TXN-123", result["payment_reference"])
+	if result["reference"] != "TXN-123" {
+		t.Errorf("reference = %v, want TXN-123", result["reference"])
 	}
 	if result["gateway"] != "mpesa" {
 		t.Errorf("gateway = %v, want mpesa", result["gateway"])

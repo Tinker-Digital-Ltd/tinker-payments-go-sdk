@@ -3,28 +3,47 @@ package http
 import (
 	"bytes"
 	"io"
-	"net/http"
+	httpstd "net/http"
 	"time"
 
 	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/errors"
 )
 
 type Client interface {
+	Get(url string, headers map[string]string) (*Response, error)
 	Post(url string, headers map[string]string, body []byte) (*Response, error)
 }
 
 type HttpClient struct {
 	timeout time.Duration
-	client  *http.Client
+	client  *httpstd.Client
 }
 
 func NewHttpClient() *HttpClient {
 	return &HttpClient{
 		timeout: 30 * time.Second,
-		client: &http.Client{
-			Timeout: 30 * time.Second,
-		},
+		client:  &httpstd.Client{Timeout: 30 * time.Second},
 	}
+}
+
+func (c *HttpClient) Get(url string, headers map[string]string) (*Response, error) {
+	req, err := httpstd.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, errors.NewNetworkException("Network error: "+err.Error(), 0, err)
+	}
+	for key, value := range headers {
+		req.Header.Set(key, value)
+	}
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return nil, errors.NewNetworkException("Network error: "+err.Error(), 0, err)
+	}
+	defer resp.Body.Close()
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.NewNetworkException("Network error: "+err.Error(), 0, err)
+	}
+	return NewResponse(resp.StatusCode, respBody, resp.Header), nil
 }
 
 func (c *HttpClient) Post(url string, headers map[string]string, body []byte) (*Response, error) {
@@ -33,7 +52,7 @@ func (c *HttpClient) Post(url string, headers map[string]string, body []byte) (*
 		bodyReader = bytes.NewReader(body)
 	}
 
-	req, err := http.NewRequest("POST", url, bodyReader)
+	req, err := httpstd.NewRequest("POST", url, bodyReader)
 	if err != nil {
 		return nil, errors.NewNetworkException("Network error: "+err.Error(), 0, err)
 	}
