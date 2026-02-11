@@ -1,8 +1,6 @@
 package dto
 
-import (
-	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/types"
-)
+import "github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/types"
 
 type InitiationDataDto struct {
 	PaymentReference string
@@ -12,8 +10,9 @@ type InitiationDataDto struct {
 
 func NewInitiationDataDto(data map[string]interface{}) *InitiationDataDto {
 	dto := &InitiationDataDto{}
-
-	if pr, ok := data["payment_reference"].(string); ok {
+	if pr, ok := data["paymentReference"].(string); ok {
+		dto.PaymentReference = pr
+	} else if pr, ok := data["payment_reference"].(string); ok {
 		dto.PaymentReference = pr
 	}
 
@@ -32,20 +31,18 @@ func NewInitiationDataDto(data map[string]interface{}) *InitiationDataDto {
 		dto.Status = types.PENDING
 	}
 
-	if au, ok := data["authorization_url"].(string); ok {
+	if au, ok := data["authorizationUrl"].(string); ok {
+		dto.AuthorizationURL = &au
+	} else if au, ok := data["authorization_url"].(string); ok {
 		dto.AuthorizationURL = &au
 	}
-
 	return dto
 }
 
 func (dto *InitiationDataDto) ToMap() map[string]interface{} {
-	result := map[string]interface{}{
-		"payment_reference": dto.PaymentReference,
-		"status":            string(dto.Status),
-	}
+	result := map[string]interface{}{"paymentReference": dto.PaymentReference, "status": string(dto.Status)}
 	if dto.AuthorizationURL != nil {
-		result["authorization_url"] = *dto.AuthorizationURL
+		result["authorizationUrl"] = *dto.AuthorizationURL
 	}
 	return result
 }

@@ -1,9 +1,12 @@
 package config
 
 const (
-	BASE_URL              = "https://payments.tinker.co.ke"
-	API_BASE_URL          = BASE_URL + "/api"
-	AUTH_TOKEN_URL        = BASE_URL + "/auth/token"
-	PAYMENT_INITIATE_PATH = "/payment/initiate"
-	PAYMENT_QUERY_PATH    = "/payment/query"
+	PRODUCTION_BASE_URL     = "https://api.tinkerpayments.com"
+	SANDBOX_BASE_URL        = "https://sandbox-api.tinkerpayments.com"
+	API_VERSION_PATH        = "/v1"
+	AUTH_TOKEN_PATH         = "/auth/token"
+	PAYMENT_INITIATE_PATH   = "/merchant/payment/initiate"
+	PAYMENT_QUERY_PATH      = "/merchant/payment/query"
+	SUBSCRIPTION_BASE_PATH  = "/merchant/subscriptions"
+	SUBSCRIPTION_PLANS_PATH = "/merchant/subscriptions/plans"
 )
