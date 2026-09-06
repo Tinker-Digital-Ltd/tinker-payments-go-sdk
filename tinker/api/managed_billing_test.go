@@ -65,3 +65,16 @@ func TestManagedBillingErrorsPreserveRecoveryInformation(t *testing.T) {
 		t.Fatal("unstructured failures must remain uncertain")
 	}
 }
+
+func TestPaymentMethodPortalHasNoSeatOrPriceMutation(t *testing.T) {
+	cfg := config.NewConfiguration("public", "secret")
+	c := &managedClient{}
+	s := NewSubscriptionManager(cfg, c, auth.NewManager(cfg, c))
+	_, e := s.PaymentMethodPortal("sub_test", "https://talon.example/dashboard/billing", "payment-method-key")
+	if e != nil {
+		t.Fatal(e)
+	}
+	if !strings.HasSuffix(c.endpoint, "/sub_test/payment-method") || c.payload["return_url"] != "https://talon.example/dashboard/billing" || len(c.payload) != 2 {
+		t.Fatalf("unexpected payment-method payload: %#v", c.payload)
+	}
+}

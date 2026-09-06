@@ -229,3 +229,15 @@ API failures can be inspected with `errors.As(err, &apiError)` where `apiError` 
 `*tinker/errors.ApiException`. It preserves `HTTPStatus`, `ErrorCode`, `ProviderCode`,
 `RequestID`, `RetryAfter` and `Outcome`, while retaining existing `Code`/`GetCode()`
 compatibility. Only an explicit `Outcome == "not_applied"` confirms no mutation.
+
+### Update a managed subscription's payment method
+
+`payments.Subscriptions().PaymentMethodPortal(subscriptionID, returnURL, operationKey)`
+creates a short-lived hosted payment-method link. It requires the managed-payment
+endpoint on the Tinker server. Reuse the operation key after an uncertain response;
+use a new key when deliberately opening a fresh session after the old link expires.
+The flow cannot change seat quantity or price. Paying an overdue invoice remains a
+separate, explicit action through its hosted invoice URL.
+
+The server verifies app ownership and restricts this flow to a managed subscription
+with a dedicated customer. Existing standard merchant contracts are excluded.
