@@ -211,3 +211,21 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/Tinker
 
 MIT License
 
+
+## Exact-price recurring billing (v0.2.0)
+
+`payments.Subscriptions()` supports `Checkout(ManagedCheckout)`, `BillingResource(id)`,
+`ChangeQuantity`, `ScheduleQuantity`, `ClearScheduledQuantity`, `SetCancelAtRenewal`,
+and `BillingOperation(idempotencyKey)`. These methods require a Tinker backend with
+managed recurring billing enabled. Checkout amounts are integer minor units; no
+client-side price conversion or automatic discount is applied.
+
+Use a stable, unique idempotency key per command and reuse it only with the same
+payload. After a timeout, `BillingOperation` retrieves the durable result without
+replaying a provider charge. A missing or pending result does not prove a charge
+failed. Do not retry with a new key to work around an uncertain result.
+
+API failures can be inspected with `errors.As(err, &apiError)` where `apiError` is
+`*tinker/errors.ApiException`. It preserves `HTTPStatus`, `ErrorCode`, `ProviderCode`,
+`RequestID`, `RetryAfter` and `Outcome`, while retaining existing `Code`/`GetCode()`
+compatibility. Only an explicit `Outcome == "not_applied"` confirms no mutation.
