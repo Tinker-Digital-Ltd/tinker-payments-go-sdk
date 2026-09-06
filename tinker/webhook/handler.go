@@ -39,14 +39,16 @@ func (h *Handler) VerifySignature(event *Event, webhookSecret string) bool {
 		return false
 	}
 
-	payloadWithoutSecurity := map[string]interface{}{
-		"id":        event.ID,
-		"type":      event.Type,
-		"source":    event.Source,
-		"timestamp": event.Timestamp,
-		"data":      event.RawData,
-		"meta":      event.RawMeta,
-	}
+	// Match the server's stable envelope order. Map encoding sorts keys and
+	// produces a different HMAC even when the decoded event is identical.
+	payloadWithoutSecurity := struct {
+		ID        string                 `json:"id"`
+		Type      string                 `json:"type"`
+		Source    string                 `json:"source"`
+		Timestamp *string                `json:"timestamp"`
+		Data      map[string]interface{} `json:"data"`
+		Meta      map[string]interface{} `json:"meta"`
+	}{event.ID, event.Type, event.Source, event.Timestamp, event.RawData, event.RawMeta}
 
 	payload, err := json.Marshal(payloadWithoutSecurity)
 	if err != nil {
