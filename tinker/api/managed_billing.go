@@ -39,3 +39,9 @@ func (sm *SubscriptionManager) SetCancelAtRenewal(id string, cancel bool, key st
 func (sm *SubscriptionManager) BillingOperation(key string) (map[string]interface{}, error) {
 	return sm.request("GET", "merchant/billing/operations/"+url.PathEscape(key), nil)
 }
+
+// PaymentMethodPortal opens a hosted payment-method-only flow. It does not
+// purchase seats, change a subscription price, or pay an outstanding invoice.
+func (sm *SubscriptionManager) PaymentMethodPortal(id, returnURL, key string) (map[string]interface{}, error) {
+	return sm.request("POST", "merchant/billing/resources/"+url.PathEscape(id)+"/payment-method", map[string]interface{}{"return_url": returnURL, "idempotency_key": key})
+}
