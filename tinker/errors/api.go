@@ -1,6 +1,13 @@
 package errors
 
 type ApiException struct {
+	HTTPStatus   int
+	ErrorCode    string
+	ProviderCode string
+	RequestID    string
+	RetryAfter   string
+	// Outcome is not_applied only when the server confirms no mutation occurred.
+	Outcome string
 	Message string
 	Code    int
 }

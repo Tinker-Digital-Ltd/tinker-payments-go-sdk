@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	nethttp "net/http"
 	"strings"
 
 	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/auth"
@@ -55,11 +56,14 @@ func (bm *BaseManager) request(method, endpoint string, data map[string]interfac
 
 	result, err := resp.JSON()
 	if err != nil {
+		if resp.StatusCode >= 400 {
+			return nil, bm.apiError(resp, nil)
+		}
 		return nil, err
 	}
 
 	if resp.StatusCode >= 400 {
-		return nil, errors.NewApiException(bm.extractErrorMessage(result), 0)
+		return nil, bm.apiError(resp, result)
 	}
 
 	if result != nil {
@@ -68,7 +72,7 @@ func (bm *BaseManager) request(method, endpoint string, data map[string]interfac
 		}
 		if success, ok := result["success"].(bool); ok {
 			if !success {
-				return nil, errors.NewApiException(bm.extractErrorMessage(result), 0)
+				return nil, bm.apiError(resp, result)
 			}
 			if dataMap, ok := result["data"].(map[string]interface{}); ok {
 				return dataMap, nil
@@ -98,4 +102,20 @@ func (bm *BaseManager) extractErrorMessage(result map[string]interface{}) string
 		}
 	}
 	return "Unknown error"
+}
+
+func (bm *BaseManager) apiError(resp *http.Response, result map[string]interface{}) error {
+	e := errors.NewApiException(bm.extractErrorMessage(result), 0)
+	e.HTTPStatus = resp.StatusCode
+	e.RequestID = nethttp.Header(resp.Headers).Get("X-Request-ID")
+	e.RetryAfter = nethttp.Header(resp.Headers).Get("Retry-After")
+	if detail, ok := result["error"].(map[string]interface{}); ok {
+		e.ErrorCode, _ = detail["code"].(string)
+		e.ProviderCode, _ = detail["provider_code"].(string)
+		e.Outcome, _ = detail["outcome"].(string)
+		if id, ok := detail["request_id"].(string); ok && id != "" {
+			e.RequestID = id
+		}
+	}
+	return e
 }
