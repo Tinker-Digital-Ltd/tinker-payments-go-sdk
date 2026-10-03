@@ -241,3 +241,25 @@ separate, explicit action through its hosted invoice URL.
 
 The server verifies app ownership and restricts this flow to a managed subscription
 with a dedicated customer. Existing standard merchant contracts are excluded.
+
+### Verified captured-payment history (v0.4.0)
+
+`payments.Subscriptions().BillingPaymentHistory(subscriptionID, cursor, snapshot)`
+reads app-scoped captured cash payments, tax-exclusive eligible amounts, successful
+refunds, and dispute principal withdrawals/reinstatements. Pass an empty cursor and
+zero snapshot for the first page. Persist the returned snapshot and use it with
+`next_cursor` until `has_more` is false. Amounts are integer minor units; timestamps
+are UTC RFC3339. Reinstatements identify the withdrawal through `reverses_id`.
+
+An item with `reconciliation_reason` has incomplete or ambiguous provider evidence
+and must be quarantined rather than credited. Commit a scan only after every page
+has been verified. The snapshot is an event cutoff, not an immutable provider
+snapshot: invoices and adjustments can change while reading. Rescan from the first
+page regularly to discover later payments, refunds and reinstatements, and apply
+facts idempotently by payment/adjustment ID. A zero-cash invoice is omitted from
+`items` while still advancing invoice pagination. Currency conversion and customer
+credits require explicit reconciliation; Stripe processing and dispute fees are
+excluded from eligible principal.
+
+This method requires the payment-history endpoint on the Tinker payment server.
+The SDK release does not deploy or enable that server endpoint.
