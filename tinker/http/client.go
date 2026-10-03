@@ -38,9 +38,12 @@ func (c *HttpClient) Get(url string, headers map[string]string) (*Response, erro
 	if err != nil {
 		return nil, errors.NewNetworkException("Network error: "+err.Error(), 0, err)
 	}
-	defer resp.Body.Close()
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
+		_ = resp.Body.Close()
+		return nil, errors.NewNetworkException("Network error: "+err.Error(), 0, err)
+	}
+	if err := resp.Body.Close(); err != nil {
 		return nil, errors.NewNetworkException("Network error: "+err.Error(), 0, err)
 	}
 	return NewResponse(resp.StatusCode, respBody, resp.Header), nil
@@ -65,10 +68,12 @@ func (c *HttpClient) Post(url string, headers map[string]string, body []byte) (*
 	if err != nil {
 		return nil, errors.NewNetworkException("Network error: "+err.Error(), 0, err)
 	}
-	defer resp.Body.Close()
-
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
+		_ = resp.Body.Close()
+		return nil, errors.NewNetworkException("Network error: "+err.Error(), 0, err)
+	}
+	if err := resp.Body.Close(); err != nil {
 		return nil, errors.NewNetworkException("Network error: "+err.Error(), 0, err)
 	}
 
