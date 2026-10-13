@@ -179,6 +179,7 @@ You can use your own HTTP client by implementing the `http.Client` interface:
 
 ```go
 type Client interface {
+    Get(url string, headers map[string]string) (*http.Response, error)
     Post(url string, headers map[string]string, body []byte) (*http.Response, error)
 }
 ```
