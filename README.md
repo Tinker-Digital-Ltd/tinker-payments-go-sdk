@@ -179,6 +179,7 @@ You can use your own HTTP client by implementing the `http.Client` interface:
 
 ```go
 type Client interface {
+    Get(url string, headers map[string]string) (*http.Response, error)
     Post(url string, headers map[string]string, body []byte) (*http.Response, error)
 }
 ```
@@ -263,3 +264,9 @@ excluded from eligible principal.
 
 This method requires the payment-history endpoint on the Tinker payment server.
 The SDK release does not deploy or enable that server endpoint.
+
+### Setup webhook acknowledgement
+
+The dashboard sends a signed `setup.webhook_test` event with `source: "onboarding"`, `data.message`, and setup metadata. Parse it with the webhook handler, verify its signature using the application webhook secret, then acknowledge it with HTTP 200, 202, or 204. Setup events have onboarding data and do not convert to payment transactions. Event classification alone does not authenticate a request. Invalid signatures must be rejected; no payment lookup or fulfillment is needed for a valid setup test.
+
+The signature uses HMAC-SHA256 over the JSON envelope excluding `security`, preserving envelope field order and Go JSON map ordering and escaping.
