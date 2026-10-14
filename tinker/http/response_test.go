@@ -28,7 +28,7 @@ func TestNewResponse(t *testing.T) {
 
 func TestResponse_JSON(t *testing.T) {
 	data := map[string]interface{}{
-		"test": "data",
+		"test":   "data",
 		"number": 123,
 	}
 	body, _ := json.Marshal(data)
@@ -58,4 +58,3 @@ func TestResponse_JSON_InvalidJSON(t *testing.T) {
 		t.Error("JSON() should return nil result on error")
 	}
 }
-
