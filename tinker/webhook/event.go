@@ -60,6 +60,15 @@ func NewEvent(payload map[string]interface{}) (*Event, error) {
 	return event, nil
 }
 
+func (e *Event) IsOnboardingEvent() bool { return e.Source == "onboarding" }
+
+// IsSetupTest identifies the test; verify the signature before acknowledging.
+func (e *Event) IsSetupTest() bool { return e.IsOnboardingEvent() && e.Type == "setup.webhook_test" }
+func (e *Event) OnboardingData() *webhookDto.OnboardingEventDataDto {
+	data, _ := e.Data.(*webhookDto.OnboardingEventDataDto)
+	return data
+}
+
 func (e *Event) IsPaymentEvent() bool      { return e.Source == "payment" }
 func (e *Event) IsSubscriptionEvent() bool { return e.Source == "subscription" }
 func (e *Event) IsInvoiceEvent() bool      { return e.Source == "invoice" }
@@ -103,6 +112,8 @@ func (e *Event) ToTransaction() *model.Transaction {
 
 func createEventData(data map[string]interface{}, source string) (interface{}, error) {
 	switch source {
+	case "onboarding":
+		return webhookDto.NewOnboardingEventDataDto(data), nil
 	case "payment":
 		return webhookDto.NewPaymentEventDataDto(data), nil
 	case "subscription":

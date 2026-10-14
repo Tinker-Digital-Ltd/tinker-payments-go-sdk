@@ -35,7 +35,7 @@ func (h *Handler) VerifySignature(event *Event, webhookSecret string) bool {
 		return false
 	}
 	signature := event.Security.Signature
-	if len(signature) < 7 || signature[:7] != "sha256=" {
+	if event.Security.Algorithm != "HMAC-SHA256" || len(signature) < 7 || signature[:7] != "sha256=" {
 		return false
 	}
 
