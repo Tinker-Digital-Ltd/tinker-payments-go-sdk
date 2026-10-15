@@ -8,5 +8,3 @@
 - Expose conflicts between checkout cancellation evidence and later successful collection.
 
 Existing payment initiation, payment history, subscription and webhook APIs remain available. Withdrawal permission is controlled by the app owner. See the README for examples, status handling and retry behaviour.
-
-Validation: Go tests, build, vet and lint pass. The real Go client passed all 11 lifecycle operations against local backend handlers and PostgreSQL services, including withdrawal balances, manual payout completion/rejection, idempotent replay and cancellation outcomes.
