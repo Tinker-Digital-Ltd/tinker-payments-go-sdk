@@ -4,6 +4,7 @@ import (
 	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/errors"
 	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/model"
 	webhookDto "github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/webhook/dto"
+	"strings"
 )
 
 type Event struct {
@@ -111,8 +112,15 @@ func (e *Event) ToTransaction() *model.Transaction {
 }
 
 func createEventData(data map[string]interface{}, source string, eventType string) (interface{}, error) {
-	if source == "payment" && eventType == "checkout.cancellation.updated.v1" {
-		return webhookDto.NewCheckoutCancellationEventData(data)
+	if source == "payment" {
+		switch {
+		case strings.HasPrefix(eventType, "checkout.cancellation.updated."):
+			return webhookDto.NewCheckoutCancellationEventData(data)
+		case strings.HasPrefix(eventType, "refund.updated."):
+			return webhookDto.NewResourceLifecycleEventData[model.Refund](data)
+		case strings.HasPrefix(eventType, "withdrawal.updated."):
+			return webhookDto.NewResourceLifecycleEventData[model.Payout](data)
+		}
 	}
 	switch source {
 	case "onboarding":
@@ -131,9 +139,18 @@ func createEventData(data map[string]interface{}, source string, eventType strin
 }
 
 func (e *Event) IsCheckoutCancellation() bool {
-	return e.Source == "payment" && e.Type == "checkout.cancellation.updated.v1"
+	return e.Source == "payment" && strings.HasPrefix(e.Type, "checkout.cancellation.updated.")
 }
 func (e *Event) CheckoutCancellationData() *webhookDto.CheckoutCancellationEventData {
 	data, _ := e.Data.(*webhookDto.CheckoutCancellationEventData)
+	return data
+}
+
+func (e *Event) RefundData() *webhookDto.ResourceLifecycleEventData[model.Refund] {
+	data, _ := e.Data.(*webhookDto.ResourceLifecycleEventData[model.Refund])
+	return data
+}
+func (e *Event) WithdrawalData() *webhookDto.ResourceLifecycleEventData[model.Payout] {
+	data, _ := e.Data.(*webhookDto.ResourceLifecycleEventData[model.Payout])
 	return data
 }
