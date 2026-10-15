@@ -1,6 +1,7 @@
 package errors
 
 type ApiException struct {
+	Details      map[string]interface{}
 	HTTPStatus   int
 	ErrorCode    string
 	ProviderCode string

@@ -26,6 +26,10 @@ func NewBaseManager(cfg *config.Configuration, httpClient http.Client, authManag
 func (bm *BaseManager) LastMeta() *model.ApiMeta { return bm.lastMeta }
 
 func (bm *BaseManager) request(method, endpoint string, data map[string]interface{}) (map[string]interface{}, error) {
+	return bm.requestWithHeaders(method, endpoint, data, nil)
+}
+
+func (bm *BaseManager) requestWithHeaders(method, endpoint string, data map[string]interface{}, requestHeaders map[string]string) (map[string]interface{}, error) {
 	baseURL := strings.TrimSuffix(bm.config.BaseURL, "/")
 	endpoint = strings.TrimPrefix(endpoint, "/")
 	url := baseURL + "/" + endpoint
@@ -36,6 +40,9 @@ func (bm *BaseManager) request(method, endpoint string, data map[string]interfac
 	}
 
 	headers := map[string]string{"Authorization": "Bearer " + token, "Accept": "application/json", "Content-Type": "application/json"}
+	for name, value := range requestHeaders {
+		headers[name] = value
+	}
 	var body []byte
 	if len(data) > 0 {
 		body, err = json.Marshal(data)
@@ -106,6 +113,7 @@ func (bm *BaseManager) extractErrorMessage(result map[string]interface{}) string
 
 func (bm *BaseManager) apiError(resp *http.Response, result map[string]interface{}) error {
 	e := errors.NewApiException(bm.extractErrorMessage(result), 0)
+	e.Details = result
 	e.HTTPStatus = resp.StatusCode
 	e.RequestID = nethttp.Header(resp.Headers).Get("X-Request-ID")
 	e.RetryAfter = nethttp.Header(resp.Headers).Get("Retry-After")

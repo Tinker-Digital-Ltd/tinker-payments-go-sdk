@@ -4,6 +4,7 @@ import (
 	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/errors"
 	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/model"
 	webhookDto "github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/webhook/dto"
+	"strings"
 )
 
 type Event struct {
@@ -38,7 +39,7 @@ func NewEvent(payload map[string]interface{}) (*Event, error) {
 		data = map[string]interface{}{}
 	}
 	event.RawData = data
-	eventData, err := createEventData(data, event.Source)
+	eventData, err := createEventData(data, event.Source, event.Type)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +111,17 @@ func (e *Event) ToTransaction() *model.Transaction {
 	return model.NewTransaction(paymentData.ToMap())
 }
 
-func createEventData(data map[string]interface{}, source string) (interface{}, error) {
+func createEventData(data map[string]interface{}, source string, eventType string) (interface{}, error) {
+	if source == "payment" {
+		switch {
+		case strings.HasPrefix(eventType, "checkout.cancellation.updated."):
+			return webhookDto.NewCheckoutCancellationEventData(data)
+		case strings.HasPrefix(eventType, "refund.updated."):
+			return webhookDto.NewResourceLifecycleEventData[model.Refund](data)
+		case strings.HasPrefix(eventType, "withdrawal.updated."):
+			return webhookDto.NewResourceLifecycleEventData[model.Payout](data)
+		}
+	}
 	switch source {
 	case "onboarding":
 		return webhookDto.NewOnboardingEventDataDto(data), nil
@@ -125,4 +136,21 @@ func createEventData(data map[string]interface{}, source string) (interface{}, e
 	default:
 		return nil, errors.NewInvalidPayloadException("Unknown webhook source: "+source, 0, nil)
 	}
+}
+
+func (e *Event) IsCheckoutCancellation() bool {
+	return e.Source == "payment" && strings.HasPrefix(e.Type, "checkout.cancellation.updated.")
+}
+func (e *Event) CheckoutCancellationData() *webhookDto.CheckoutCancellationEventData {
+	data, _ := e.Data.(*webhookDto.CheckoutCancellationEventData)
+	return data
+}
+
+func (e *Event) RefundData() *webhookDto.ResourceLifecycleEventData[model.Refund] {
+	data, _ := e.Data.(*webhookDto.ResourceLifecycleEventData[model.Refund])
+	return data
+}
+func (e *Event) WithdrawalData() *webhookDto.ResourceLifecycleEventData[model.Payout] {
+	data, _ := e.Data.(*webhookDto.ResourceLifecycleEventData[model.Payout])
+	return data
 }

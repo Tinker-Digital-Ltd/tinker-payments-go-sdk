@@ -53,4 +53,3 @@ func TestHttpClient_Post_NilBody(t *testing.T) {
 		t.Fatal("Post() returned nil response")
 	}
 }
-

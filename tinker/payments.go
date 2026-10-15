@@ -14,6 +14,7 @@ type Payments struct {
 	httpClient          http.Client
 	authManager         *auth.Manager
 	transactionManager  *api.TransactionManager
+	payoutManager       *api.PayoutManager
 	subscriptionManager *api.SubscriptionManager
 	webhookHandler      *webhook.Handler
 }
@@ -44,6 +45,13 @@ func (p *Payments) Subscriptions() *api.SubscriptionManager {
 		p.subscriptionManager = api.NewSubscriptionManager(p.config, p.httpClient, p.authManager)
 	}
 	return p.subscriptionManager
+}
+
+func (p *Payments) Payouts() *api.PayoutManager {
+	if p.payoutManager == nil {
+		p.payoutManager = api.NewPayoutManager(p.config, p.httpClient, p.authManager)
+	}
+	return p.payoutManager
 }
 
 func (p *Payments) Webhooks() *webhook.Handler {
