@@ -322,3 +322,5 @@ fmt.Println(current.Status)
 ```
 
 `Transactions()` also exposes `Refunds`, `GetRefund` and `Cancellations`; `Payouts().List(model.PayoutFilters{})` provides paginated tracking. Typed lifecycle resources, reasons, statuses and result envelopes are in `tinker/model`. Cancellation webhook data is available from `Event.CheckoutCancellationData()`.
+
+Cancellation resources expose `payment_conflict` when later successful payment evidence conflicts with expiry. Treat successful payment as authoritative and use the refund workflow where appropriate.

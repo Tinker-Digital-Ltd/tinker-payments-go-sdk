@@ -189,6 +189,7 @@ type CancellationRequest struct {
 }
 
 type Cancellation struct {
+	PaymentConflict  bool               `json:"payment_conflict,omitempty"`
 	ID               string             `json:"id"`
 	PaymentID        string             `json:"payment_id"`
 	Status           CancellationStatus `json:"status"`
