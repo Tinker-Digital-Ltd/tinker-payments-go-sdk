@@ -38,7 +38,7 @@ func NewEvent(payload map[string]interface{}) (*Event, error) {
 		data = map[string]interface{}{}
 	}
 	event.RawData = data
-	eventData, err := createEventData(data, event.Source)
+	eventData, err := createEventData(data, event.Source, event.Type)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +110,10 @@ func (e *Event) ToTransaction() *model.Transaction {
 	return model.NewTransaction(paymentData.ToMap())
 }
 
-func createEventData(data map[string]interface{}, source string) (interface{}, error) {
+func createEventData(data map[string]interface{}, source string, eventType string) (interface{}, error) {
+	if source == "payment" && eventType == "checkout.cancellation.updated.v1" {
+		return webhookDto.NewCheckoutCancellationEventData(data)
+	}
 	switch source {
 	case "onboarding":
 		return webhookDto.NewOnboardingEventDataDto(data), nil
@@ -125,4 +128,12 @@ func createEventData(data map[string]interface{}, source string) (interface{}, e
 	default:
 		return nil, errors.NewInvalidPayloadException("Unknown webhook source: "+source, 0, nil)
 	}
+}
+
+func (e *Event) IsCheckoutCancellation() bool {
+	return e.Source == "payment" && e.Type == "checkout.cancellation.updated.v1"
+}
+func (e *Event) CheckoutCancellationData() *webhookDto.CheckoutCancellationEventData {
+	data, _ := e.Data.(*webhookDto.CheckoutCancellationEventData)
+	return data
 }
