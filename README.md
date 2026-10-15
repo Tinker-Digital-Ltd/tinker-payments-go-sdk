@@ -262,9 +262,6 @@ facts idempotently by payment/adjustment ID. A zero-cash invoice is omitted from
 credits require explicit reconciliation; Stripe processing and dispute fees are
 excluded from eligible principal.
 
-This method requires the payment-history endpoint on the Tinker payment server.
-The SDK release does not deploy or enable that server endpoint.
-
 ### Setup webhook acknowledgement
 
 The dashboard sends a signed `setup.webhook_test` event with `source: "onboarding"`, `data.message`, and setup metadata. Parse it with the webhook handler, verify its signature using the application webhook secret, then acknowledge it with HTTP 200, 202, or 204. Setup events have onboarding data and do not convert to payment transactions. Event classification alone does not authenticate a request. Invalid signatures must be rejected; no payment lookup or fulfillment is needed for a valid setup test.
@@ -273,7 +270,7 @@ The signature uses HMAC-SHA256 over the JSON envelope excluding `security`, pres
 
 ## Refunds, wallet withdrawals and checkout cancellation
 
-These APIs require the merchant lifecycle backend routes under `/v1/merchant` to be deployed. SDK package releases must follow backend deployment and verified sandbox parity. Existing apps need the owner to enable withdrawal requests in app settings.
+The app owner enables withdrawal requests in app settings.
 
 `payouts` means a withdrawal from the merchant's wallet to its own active, verified payout method. Amounts use currency units: withdrawing JPY 100 with a fee of 2 reserves 100 and pays 98. Obtain a quote and pass its `fee_amount` as `expected_fee_amount`; a fee conflict includes a refreshed quote in the structured API error. No method accepts arbitrary recipient banking details.
 

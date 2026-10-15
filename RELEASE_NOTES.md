@@ -1,7 +1,12 @@
-# Merchant lifecycle APIs (unreleased)
+# v0.6.0 — Refunds, merchant withdrawals and checkout cancellation
 
-Added app-scoped refund requests/history, verified merchant withdrawal methods/quotes/requests/pages, and durable checkout-cancellation requests/history. Mutations use caller-supplied idempotency headers through the existing shared transport. Typed models retain review, rejected and uncertain states; structured errors retain persisted request IDs and fee-conflict details. Signed cancellation events retain their own resource without creating a payment transaction.
+- Request refunds and read refund history and status through the transaction manager.
+- List verified payout methods, obtain fee quotes, request merchant wallet withdrawals, and track payouts.
+- Request checkout cancellation and inspect supported, rejected and uncertain outcomes.
+- Use stable idempotency keys for mutations and retain structured errors, including request IDs and refreshed fee quotes.
+- Parse signed refund, withdrawal and checkout-cancellation events as typed resources without creating payment transactions.
+- Expose conflicts between checkout cancellation evidence and later successful collection.
 
-Compatibility: existing payment initiation/query, subscription and webhook methods remain available. App withdrawal permission is owner-controlled and defaults off. Backend routes must deploy before package publication. Sandbox parity, financial integration/recovery evidence and deployment are release gates; fixture checks do not establish deployed sandbox parity. No package has been published by this change.
+Existing payment initiation, payment history, subscription and webhook APIs remain available. Withdrawal permission is controlled by the app owner. See the README for examples, status handling and retry behaviour.
 
-Contract validation uses canonical fixtures from `tinker-payments-openapi/fixtures`, with checked-in snapshots for standalone CI and drift checks when the sibling repository exists. See README for operation examples and recovery behavior.
+Validation: Go tests, build, vet and lint pass. The real Go client passed all 11 lifecycle operations against local backend handlers and PostgreSQL services, including withdrawal balances, manual payout completion/rejection, idempotent replay and cancellation outcomes.
