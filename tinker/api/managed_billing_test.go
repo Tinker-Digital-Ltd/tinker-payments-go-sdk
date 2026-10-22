@@ -9,6 +9,7 @@ import (
 	sdkhttp "github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/http"
 	"strings"
 	"testing"
+	"time"
 )
 
 type managedClient struct {
@@ -20,6 +21,7 @@ type managedClient struct {
 func (c *managedClient) Post(endpoint string, headers map[string]string, body []byte) (*sdkhttp.Response, error) {
 	if !strings.Contains(endpoint, "/auth/token") {
 		c.endpoint = endpoint
+		c.payload = nil
 		_ = json.Unmarshal(body, &c.payload)
 	}
 	return c.mockHttpClient.Post(endpoint, headers, body)
@@ -39,12 +41,37 @@ func TestManagedBillingExactAnnualAndSeatCommands(t *testing.T) {
 	if _, sent := c.payload["trial_days"]; sent {
 		t.Fatal("checkout without a trial must not send trial_days")
 	}
+	if _, sent := c.payload["trial_end"]; sent {
+		t.Fatal("checkout without a trial end must not send trial_end")
+	}
 	_, e = s.Checkout(ManagedCheckout{ExternalCustomerID: "workspace", UnitAmount: 15000, Quantity: 3, Interval: "month", Currency: "EUR", IdempotencyKey: "trial-operation-key", TrialDays: 14})
 	if e != nil {
 		t.Fatal(e)
 	}
 	if c.payload["trial_days"] != float64(14) {
 		t.Fatalf("missing trial days: %#v", c.payload)
+	}
+	end := time.Unix(1900000000, 0)
+	_, e = s.Checkout(ManagedCheckout{ExternalCustomerID: "workspace", UnitAmount: 15000, Quantity: 3, Interval: "month", Currency: "EUR", IdempotencyKey: "trial-end-key", TrialEnd: &end})
+	if e != nil {
+		t.Fatal(e)
+	}
+	if c.payload["trial_end"] != float64(1900000000) {
+		t.Fatalf("missing trial end: %#v", c.payload)
+	}
+	_, e = s.SetTrialEnd("sub_test", end, "move-operation")
+	if e != nil {
+		t.Fatal(e)
+	}
+	if !strings.HasSuffix(c.endpoint, "/sub_test/trial-end") || c.payload["trial_end"] != float64(1900000000) || c.payload["idempotency_key"] != "move-operation" {
+		t.Fatalf("incorrect set trial end: %#v", c.payload)
+	}
+	_, e = s.EndTrial("sub_test", "end-operation")
+	if e != nil {
+		t.Fatal(e)
+	}
+	if !strings.HasSuffix(c.endpoint, "/sub_test/end-trial") || len(c.payload) != 1 || c.payload["idempotency_key"] != "end-operation" {
+		t.Fatalf("incorrect end trial: %#v", c.payload)
 	}
 	_, e = s.ChangeQuantity("sub_test", 4, "increase-operation")
 	if e != nil {

@@ -1,3 +1,10 @@
+# v0.8.0 — Complimentary trials
+
+- `ManagedCheckout.TrialEnd` sets an exact trial end (48 hours to 730 days ahead); `TrialDays` now allows up to 730 days.
+- `SetTrialEnd` moves the next charge of a trialing subscription, or extends a paid one; `EndTrial` ends a trial and charges now.
+
+Requires a Tinker Payments server with complimentary trial support. See the README for the rules on paid subscriptions and scheduled seat changes.
+
 # v0.7.0 — Managed billing trials
 
 - `ManagedCheckout.TrialDays` starts a 1 to 30 day trial that requires a payment method; the first charge happens at trial end.
