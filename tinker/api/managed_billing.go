@@ -31,6 +31,9 @@ func (sm *SubscriptionManager) Checkout(in ManagedCheckout) (map[string]interfac
 	}
 	return sm.request("POST", "merchant/billing/checkout", body)
 }
+func (sm *SubscriptionManager) ExpireCheckout(id, key string) (map[string]interface{}, error) {
+	return sm.request("POST", "merchant/billing/checkout/"+url.PathEscape(id)+"/expire", map[string]interface{}{"idempotency_key": key})
+}
 func (sm *SubscriptionManager) BillingResource(id string) (map[string]interface{}, error) {
 	return sm.request("GET", "merchant/billing/resources/"+url.PathEscape(id), nil)
 }
