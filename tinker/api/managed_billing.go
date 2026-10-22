@@ -14,10 +14,15 @@ type ManagedCheckout struct {
 	Interval           string `json:"interval"`
 	ReturnURL          string `json:"return_url"`
 	IdempotencyKey     string `json:"idempotency_key"`
+	TrialDays          int    `json:"trial_days,omitempty"`
 }
 
 func (sm *SubscriptionManager) Checkout(in ManagedCheckout) (map[string]interface{}, error) {
-	return sm.request("POST", "merchant/billing/checkout", map[string]interface{}{"external_customer_id": in.ExternalCustomerID, "email": in.Email, "name": in.Name, "currency": in.Currency, "unit_amount": in.UnitAmount, "quantity": in.Quantity, "interval": in.Interval, "return_url": in.ReturnURL, "idempotency_key": in.IdempotencyKey})
+	body := map[string]interface{}{"external_customer_id": in.ExternalCustomerID, "email": in.Email, "name": in.Name, "currency": in.Currency, "unit_amount": in.UnitAmount, "quantity": in.Quantity, "interval": in.Interval, "return_url": in.ReturnURL, "idempotency_key": in.IdempotencyKey}
+	if in.TrialDays > 0 {
+		body["trial_days"] = in.TrialDays
+	}
+	return sm.request("POST", "merchant/billing/checkout", body)
 }
 func (sm *SubscriptionManager) BillingResource(id string) (map[string]interface{}, error) {
 	return sm.request("GET", "merchant/billing/resources/"+url.PathEscape(id), nil)

@@ -36,6 +36,16 @@ func TestManagedBillingExactAnnualAndSeatCommands(t *testing.T) {
 	if !strings.HasSuffix(c.endpoint, "/merchant/billing/checkout") || c.payload["unit_amount"] != float64(15000) || c.payload["quantity"] != float64(3) || c.payload["interval"] != "year" {
 		t.Fatalf("incorrect annual checkout: %#v", c.payload)
 	}
+	if _, sent := c.payload["trial_days"]; sent {
+		t.Fatal("checkout without a trial must not send trial_days")
+	}
+	_, e = s.Checkout(ManagedCheckout{ExternalCustomerID: "workspace", UnitAmount: 15000, Quantity: 3, Interval: "month", Currency: "EUR", IdempotencyKey: "trial-operation-key", TrialDays: 14})
+	if e != nil {
+		t.Fatal(e)
+	}
+	if c.payload["trial_days"] != float64(14) {
+		t.Fatalf("missing trial days: %#v", c.payload)
+	}
 	_, e = s.ChangeQuantity("sub_test", 4, "increase-operation")
 	if e != nil {
 		t.Fatal(e)
