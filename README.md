@@ -77,6 +77,21 @@ if err != nil {
 fmt.Println(operation)
 ```
 
+### Trials with a required payment method
+
+Set `TrialDays` (1 to 30) to collect a card at checkout and charge first when the trial ends. The SDK sends `trial_days` only when it is above 0, so checkouts without a trial keep working against servers released before trial support. A gateway without trial support returns HTTP 422 `TRIAL_UNSUPPORTED` with `outcome: not_applied`. Limiting a customer to one trial is the app's responsibility.
+
+```go
+checkout, err := billing.Checkout(api.ManagedCheckout{
+	ExternalCustomerID: "workspace-123", Email: "buyer@example.com", Name: "Buyer",
+	Currency: "EUR", UnitAmount: 1500, Quantity: 3, Interval: "month",
+	ReturnURL: "https://example.com/billing", IdempotencyKey: "checkout-124",
+	TrialDays: 14,
+})
+```
+
+Checkout and billing resource responses include a provider-neutral `managed_state` map: `status` (`pending`, `trialing`, `active`, `past_due`, `paused` or `canceled`), `trial_ends_at`, `current_period_end` and `cancel_at_period_end`. Read it instead of raw provider fields; grant access while `status` is `trialing` or `active` and `current_period_end` is in the future. Managed subscription webhooks carry `billing_status` and `trial_ends_at`, and `subscription.trial_will_end` arrives up to three days before the trial ends. The trial's €0 invoice sends `invoice.paid` with amount 0 and is not a payment.
+
 Other methods are `BillingResource`, `ChangeQuantity`, `ScheduleQuantity`, `ClearScheduledQuantity`, `SetCancelAtRenewal`, `PaymentMethodPortal` and `BillingPaymentHistory(subscriptionID, cursor, snapshot)`. Start history with an empty cursor and zero snapshot. `api.ManagedCheckout` uses `int64` minor-unit amounts and `int` quantities.
 
 Use a stable key per mutation and reuse it with the same payload after a lost response. Recover through the operation lookup; missing or pending results remain uncertain. Only an explicit `outcome` of `not_applied` confirms no mutation.
