@@ -1,3 +1,9 @@
+# v0.9.0 — Expire abandoned checkouts
+
+- `ExpireCheckout(id, key)` expires an open managed checkout so an abandoned link cannot create a second subscription. An already expired checkout is returned unchanged; a completed one returns HTTP 409 `CHECKOUT_COMPLETED`.
+
+Requires a Tinker Payments server with checkout expiry support.
+
 # v0.8.0 — Complimentary trials
 
 - `ManagedCheckout.TrialEnd` sets an exact trial end (48 hours to 730 days ahead); `TrialDays` now allows up to 730 days.

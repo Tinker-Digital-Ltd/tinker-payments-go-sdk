@@ -59,6 +59,13 @@ func TestManagedBillingExactAnnualAndSeatCommands(t *testing.T) {
 	if c.payload["trial_end"] != float64(1900000000) {
 		t.Fatalf("missing trial end: %#v", c.payload)
 	}
+	_, e = s.ExpireCheckout("cs/a b", "expire-operation")
+	if e != nil {
+		t.Fatal(e)
+	}
+	if !strings.HasSuffix(c.endpoint, "/merchant/billing/checkout/cs%2Fa%20b/expire") || len(c.payload) != 1 || c.payload["idempotency_key"] != "expire-operation" {
+		t.Fatalf("incorrect expire checkout: %s %#v", c.endpoint, c.payload)
+	}
 	_, e = s.SetTrialEnd("sub_test", end, "move-operation")
 	if e != nil {
 		t.Fatal(e)
