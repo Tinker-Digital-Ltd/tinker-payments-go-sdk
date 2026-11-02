@@ -50,6 +50,39 @@ func main() {
 
 Payments use currency units. Mpesa requires `CustomerPhone`; `ReturnURL` is the browser destination, while webhooks are configured separately in the dashboard.
 
+### Apple Pay / Google Pay
+
+```go
+method := "apple_pay" // or "google_pay"
+payment, err := client.Transactions().Initiate(&dto.InitiatePaymentRequestDto{
+	Amount: 100, Currency: "USD", Gateway: types.STRIPE,
+	MerchantReference: "ORDER-12345",
+	ReturnURL:         "https://merchant.example/payment/return", PaymentMethod: &method,
+})
+if err != nil {
+	log.Fatal(err)
+}
+// return payment.InitiationData.ClientSecret and PublishableKey to the browser as JSON
+```
+
+```html
+<div id="wallet"></div>
+<script src="https://js.stripe.com/v3/"></script>
+<script type="module">
+  const { clientSecret, publishableKey } = await fetch("/checkout/wallet", { method: "POST" }).then((r) => r.json());
+  const stripe = Stripe(publishableKey);
+  const elements = stripe.elements({ clientSecret });
+  const wallet = elements.create("expressCheckout", { paymentMethods: { applePay: "always", googlePay: "always" } });
+  wallet.mount("#wallet");
+  wallet.on("confirm", async () => {
+    const { error } = await stripe.confirmPayment({ elements, clientSecret, redirect: "if_required", confirmParams: { return_url: location.href } });
+    if (error) console.error(error.message);
+  });
+</script>
+```
+
+The result arrives through `payment.*` webhooks. Apple Pay on the web needs the checkout domain registered with Stripe.
+
 Plan subscriptions use `Subscriptions().CreatePlan`, `ListPlans`, `Create`, `List` and `Cancel` with request DTOs in `tinker/model/dto`.
 
 ## Managed recurring billing

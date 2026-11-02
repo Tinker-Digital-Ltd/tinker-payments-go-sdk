@@ -80,4 +80,23 @@ func TestInitiatePaymentRequestDto_ToMap_OptionalFields(t *testing.T) {
 	if result["metadata"] != nil {
 		t.Error("metadata should not be in map when nil")
 	}
+	if _, ok := result["paymentMethod"]; ok {
+		t.Error("paymentMethod should not be in map when nil")
+	}
+}
+
+func TestInitiatePaymentRequestDto_ToMap_PaymentMethod(t *testing.T) {
+	method := "apple_pay"
+	dto := &InitiatePaymentRequestDto{
+		Amount:            100.00,
+		Currency:          "USD",
+		Gateway:           types.STRIPE,
+		MerchantReference: "ORDER-123",
+		ReturnURL:         "https://example.com/return",
+		PaymentMethod:     &method,
+	}
+
+	if got := dto.ToMap()["paymentMethod"]; got != "apple_pay" {
+		t.Errorf("paymentMethod = %v, want apple_pay", got)
+	}
 }
