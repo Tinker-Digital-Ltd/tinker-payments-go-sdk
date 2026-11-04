@@ -6,4 +6,5 @@ const (
 	MPESA    Gateway = "mpesa"
 	PAYSTACK Gateway = "paystack"
 	STRIPE   Gateway = "stripe"
+	PESAPAL  Gateway = "pesapal"
 )

@@ -26,16 +26,7 @@ func NewPaymentEventDataDto(data map[string]interface{}) *PaymentEventDataDto {
 	if s, ok := data["status"].(string); ok {
 		statusValue = s
 	}
-	switch statusValue {
-	case "success":
-		dto.Status = types.SUCCESS
-	case "cancelled":
-		dto.Status = types.CANCELLED
-	case "failed":
-		dto.Status = types.FAILED
-	default:
-		dto.Status = types.PENDING
-	}
+	dto.Status = types.ParsePaymentStatus(statusValue)
 
 	if ref, ok := data["reference"].(string); ok {
 		dto.Reference = ref
