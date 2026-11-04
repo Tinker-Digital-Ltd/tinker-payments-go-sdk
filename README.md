@@ -87,6 +87,8 @@ if err != nil {
 
 The result arrives through `payment.*` webhooks. Apple Pay and Google Pay on the web need the checkout domain registered with Stripe.
 
+`Gateway` is a string: any provider id works, so a new provider needs no SDK update. `Transactions().Capabilities("KES", "KE")` lists the connected providers and what each supports (`native`, `emulated`, `manual`, `unavailable`). A request for an `unavailable` feature returns HTTP 422 `FEATURE_NOT_SUPPORTED` as `*errors.FeatureNotSupportedException` with `Gateway`, `Feature` and `Alternatives`. Payment statuses may include values added later; compare with the constants you handle and treat the rest as in progress.
+
 Plan subscriptions use `Subscriptions().CreatePlan`, `ListPlans`, `Create`, `List` and `Cancel` with request DTOs in `tinker/model/dto`.
 
 ## Managed recurring billing
@@ -164,7 +166,7 @@ The app owner must enable withdrawal requests in app settings. A payout is a wit
 
 Supply a stable `Idempotency-Key` for every refund, payout or cancellation request. Keys are trimmed and must be 1–255 UTF-8 bytes. Reuse the same key and semantic request after transport failures; a changed request conflicts. A replay returns the original resource and fee snapshot. Start a new key for a new intended operation.
 
-A refund's `pending_review`/`approved` state and a payout's `pending_approval`/`approved` state are not completion. Only `refunded`, `paid` or provider-confirmed `cancelled` establishes completion. Preserve cancellation `outcome_unknown` and poll by ID; do not blindly submit another request. Unsupported cancellation raises HTTP 422 `CHECKOUT_CANCELLATION_UNSUPPORTED` and retains the persisted `request_id`/`status` in error details. Lifecycle conflicts use HTTP 409; replaying a persisted rejection retains its 422/409 result.
+A refund's `pending_review`/`approved` state and a payout's `pending_approval`/`approved` state are not completion. Only `refunded`, `paid` or provider-confirmed `cancelled` establishes completion. Preserve cancellation `outcome_unknown` and poll by ID; do not blindly submit another request. Unsupported cancellation raises HTTP 422 `FEATURE_NOT_SUPPORTED` and retains the persisted `request_id`/`status` in error details. Lifecycle conflicts use HTTP 409; replaying a persisted rejection retains its 422/409 result.
 
 Refund history includes refundable amounts and `refund_capability`. Cancellation history includes `capability`, the newest 100 requests and `has_more`; retrieve older known requests by ID. Payout listing accepts `page`, `per_page` (maximum 100), `status` and `currency`. Reads are scoped to the app; payout reads show only requests attributed to that app.
 
