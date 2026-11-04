@@ -25,8 +25,9 @@ type lifecycleCase struct {
 	Response                map[string]interface{}
 }
 type lifecycleFixture struct {
-	Cases  []lifecycleCase
-	Errors []lifecycleCase
+	Cases   []lifecycleCase
+	Errors  []lifecycleCase
+	Gateway struct{ Cases []lifecycleCase }
 }
 
 func sharedLifecycleFixture(t *testing.T) lifecycleFixture {
