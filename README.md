@@ -124,7 +124,7 @@ _, err := billing.ExpireCheckout("checkout-id", "expire-checkout-1")
 
 ### Trials with a required payment method
 
-Set `TrialDays` (1 to 730) or an exact `TrialEnd` (`*time.Time`, 48 hours to 730 days ahead; cannot be combined with `TrialDays`) to collect a card at checkout and charge first when the trial ends. The SDK sends `trial_days` only when it is above 0 and `trial_end` only when set, so checkouts without a trial keep working against servers released before trial support. A gateway without trial support returns HTTP 422 `TRIAL_UNSUPPORTED` with `outcome: not_applied`. Limiting a customer to one trial is the app's responsibility.
+Set `TrialDays` (1 to 730) or an exact `TrialEnd` (`*time.Time`, 48 hours to 730 days ahead; cannot be combined with `TrialDays`) to collect a card at checkout and charge first when the trial ends. The SDK sends `trial_days` only when it is above 0 and `trial_end` only when set, so checkouts without a trial keep working against servers released before trial support. A gateway without trial support returns HTTP 422 `FEATURE_NOT_SUPPORTED` with `outcome: not_applied`. Limiting a customer to one trial is the app's responsibility.
 
 ```go
 checkout, err := billing.Checkout(api.ManagedCheckout{
