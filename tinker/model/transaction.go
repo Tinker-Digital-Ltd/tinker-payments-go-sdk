@@ -42,16 +42,7 @@ func NewTransaction(data map[string]interface{}) *Transaction {
 	if s, ok := data["status"].(string); ok {
 		statusValue = s
 	}
-	switch statusValue {
-	case "success":
-		txn.Status = types.SUCCESS
-	case "cancelled":
-		txn.Status = types.CANCELLED
-	case "failed":
-		txn.Status = types.FAILED
-	default:
-		txn.Status = types.PENDING
-	}
+	txn.Status = types.ParsePaymentStatus(statusValue)
 	return txn
 }
 

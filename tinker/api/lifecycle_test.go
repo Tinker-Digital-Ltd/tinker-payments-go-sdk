@@ -25,8 +25,9 @@ type lifecycleCase struct {
 	Response                map[string]interface{}
 }
 type lifecycleFixture struct {
-	Cases  []lifecycleCase
-	Errors []lifecycleCase
+	Cases   []lifecycleCase
+	Errors  []lifecycleCase
+	Gateway struct{ Cases []lifecycleCase }
 }
 
 func sharedLifecycleFixture(t *testing.T) lifecycleFixture {
@@ -37,7 +38,7 @@ func sharedLifecycleFixture(t *testing.T) lifecycleFixture {
 	}
 	canonical := os.Getenv("TINKER_LIFECYCLE_FIXTURE")
 	if canonical == "" {
-		canonical = "../../../tinker-payments-openapi/fixtures/merchant-lifecycle.json"
+		canonical = "../../../../tinker-payments-backend/openapi/fixtures/merchant-lifecycle.json"
 	}
 	if raw, err := os.ReadFile(canonical); err == nil && string(raw) != string(snapshot) {
 		t.Fatal("Shared fixture snapshot drifted")

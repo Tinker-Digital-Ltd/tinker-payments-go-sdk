@@ -11,7 +11,7 @@ func TestSignedCheckoutCancellation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if canonical, err := os.ReadFile("../../../tinker-payments-openapi/fixtures/checkout-cancellation-webhook.json"); err == nil && string(canonical) != string(raw) {
+	if canonical, err := os.ReadFile("../../../../tinker-payments-backend/openapi/fixtures/checkout-cancellation-webhook.json"); err == nil && string(canonical) != string(raw) {
 		t.Fatal("Signed fixture snapshot drifted")
 	}
 	handler := NewHandler()
@@ -44,7 +44,7 @@ func TestSignedRefundAndWithdrawalLifecycle(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if canonical, err := os.ReadFile("../../../tinker-payments-openapi/fixtures/" + name + "-webhook.json"); err == nil && string(canonical) != string(raw) {
+			if canonical, err := os.ReadFile("../../../../tinker-payments-backend/openapi/fixtures/" + name + "-webhook.json"); err == nil && string(canonical) != string(raw) {
 				t.Fatal("Signed fixture snapshot drifted")
 			}
 			handler := NewHandler()

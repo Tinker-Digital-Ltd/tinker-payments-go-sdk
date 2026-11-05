@@ -1,3 +1,10 @@
+# v0.10.0 — Gateway standard
+
+- `Gateway` accepts any provider id; `types.PESAPAL` added.
+- `Transactions().Capabilities(currency, country)` lists connected providers and what each supports.
+- HTTP 422 `FEATURE_NOT_SUPPORTED` returns `*errors.FeatureNotSupportedException` with `Gateway`, `Feature` and `Alternatives`; `errors.As` to `*errors.ApiException` still works.
+- Payment status adds `partially_refunded`, `refunded` and `reversed`; `completed` maps to `success`; an unknown future status is kept as sent instead of becoming `pending`.
+
 # v0.9.0 — Expire abandoned checkouts
 
 - `ExpireCheckout(id, key)` expires an open managed checkout so an abandoned link cannot create a second subscription. An already expired checkout is returned unchanged; a completed one returns HTTP 409 `CHECKOUT_COMPLETED`.
