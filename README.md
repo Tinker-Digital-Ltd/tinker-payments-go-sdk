@@ -53,7 +53,7 @@ Payments use currency units. Mpesa requires `CustomerPhone`; `ReturnURL` is the 
 ### Apple Pay / Google Pay
 
 ```go
-method := "apple_pay" // or "google_pay"
+method := "apple_pay" // or "google_pay"; "bnpl" opens Klarna on Stripe Checkout
 payment, err := client.Transactions().Initiate(&dto.InitiatePaymentRequestDto{
 	Amount: 100, Currency: "USD", Gateway: types.STRIPE,
 	MerchantReference: "ORDER-12345",
