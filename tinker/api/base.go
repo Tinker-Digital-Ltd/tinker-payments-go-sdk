@@ -52,10 +52,17 @@ func (bm *BaseManager) requestWithHeaders(method, endpoint string, data map[stri
 	}
 
 	var resp *http.Response
-	if strings.EqualFold(method, "GET") {
+	switch strings.ToUpper(method) {
+	case "GET":
 		resp, err = bm.httpClient.Get(url, headers)
-	} else {
+	case "POST":
 		resp, err = bm.httpClient.Post(url, headers, body)
+	default:
+		doer, ok := bm.httpClient.(http.Doer)
+		if !ok {
+			return nil, errors.NewNetworkException("HTTP client does not support "+method, 0, nil)
+		}
+		resp, err = doer.Do(strings.ToUpper(method), url, headers, body)
 	}
 	if err != nil {
 		return nil, err

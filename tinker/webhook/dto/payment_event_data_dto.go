@@ -11,6 +11,7 @@ type PaymentEventDataDto struct {
 	Amount    float64
 	Currency  string
 	Channel   *string
+	Country   *string
 	CreatedAt *string
 	PaidAt    *string
 }
@@ -44,6 +45,10 @@ func NewPaymentEventDataDto(data map[string]interface{}) *PaymentEventDataDto {
 		dto.Channel = &channel
 	}
 
+	if country, ok := data["country"].(string); ok {
+		dto.Country = &country
+	}
+
 	if createdAt, ok := data["created_at"].(string); ok {
 		dto.CreatedAt = &createdAt
 	}
@@ -65,6 +70,9 @@ func (dto *PaymentEventDataDto) ToMap() map[string]interface{} {
 	}
 	if dto.Channel != nil {
 		result["channel"] = *dto.Channel
+	}
+	if dto.Country != nil {
+		result["country"] = *dto.Country
 	}
 	if dto.CreatedAt != nil {
 		result["created_at"] = *dto.CreatedAt

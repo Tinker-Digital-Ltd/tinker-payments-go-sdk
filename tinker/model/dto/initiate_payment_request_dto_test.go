@@ -100,3 +100,18 @@ func TestInitiatePaymentRequestDto_ToMap_PaymentMethod(t *testing.T) {
 		t.Errorf("paymentMethod = %v, want apple_pay", got)
 	}
 }
+
+func TestInitiatePaymentRequestDto_ToMap_CountryAndCustomerName(t *testing.T) {
+	name, country := "Ada Lovelace", "DE"
+	result := (&InitiatePaymentRequestDto{CustomerName: &name, Country: &country}).ToMap()
+	if result["customerName"] != name || result["country"] != country {
+		t.Errorf("customerName/country = %v/%v", result["customerName"], result["country"])
+	}
+	result = (&InitiatePaymentRequestDto{}).ToMap()
+	if _, ok := result["customerName"]; ok {
+		t.Error("customerName should be omitted")
+	}
+	if _, ok := result["country"]; ok {
+		t.Error("country should be omitted")
+	}
+}

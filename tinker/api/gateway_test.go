@@ -22,11 +22,11 @@ func TestGatewaySharedContract(t *testing.T) {
 		data, _ := row.Response["data"].(map[string]interface{})
 		switch row.Operation {
 		case "listPaymentCapabilities":
-			providers, err := tx.Capabilities("KES", "KE")
+			capabilities, err := tx.Capabilities("KES", "KE")
 			if err != nil {
 				t.Fatal(err)
 			}
-			raw, _ := json.Marshal(providers)
+			raw, _ := json.Marshal(capabilities.Providers)
 			var actual interface{}
 			_ = json.Unmarshal(raw, &actual)
 			if !reflect.DeepEqual(actual, data["providers"]) {

@@ -6,6 +6,7 @@ type CreateSubscriptionRequestDto struct {
 	Customer        *SubscriptionCustomerDto
 	PaymentMethodID *string
 	BillingPeriod   *string
+	Country         *string
 }
 
 func (dto *CreateSubscriptionRequestDto) ToMap() map[string]interface{} {
@@ -19,6 +20,9 @@ func (dto *CreateSubscriptionRequestDto) ToMap() map[string]interface{} {
 	}
 	if dto.BillingPeriod != nil {
 		m["billing_period"] = *dto.BillingPeriod
+	}
+	if dto.Country != nil {
+		m["country"] = *dto.Country
 	}
 	return m
 }

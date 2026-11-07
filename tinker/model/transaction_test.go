@@ -110,3 +110,12 @@ func TestTransaction_IsFailed(t *testing.T) {
 		t.Error("IsFailed() should return false for non-FAILED status")
 	}
 }
+
+func TestNewTransaction_QueryCountryAndSpecStatuses(t *testing.T) {
+	for _, status := range []types.PaymentStatus{types.AUTHORISED, types.BLOCKED, types.EXPIRED} {
+		txn := NewTransaction(map[string]interface{}{"id": "1", "reference": "R", "status": string(status), "country": "DE"})
+		if txn.Status != status || txn.QueryData.Country == nil || *txn.QueryData.Country != "DE" {
+			t.Errorf("status %s, country %v", txn.Status, txn.QueryData.Country)
+		}
+	}
+}

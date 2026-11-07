@@ -13,6 +13,7 @@ type CallbackDataDto struct {
 	PaidAt    *string
 	CreatedAt *string
 	Channel   *string
+	Country   *string
 }
 
 func NewCallbackDataDto(data map[string]interface{}) *CallbackDataDto {
@@ -52,6 +53,10 @@ func NewCallbackDataDto(data map[string]interface{}) *CallbackDataDto {
 		dto.Channel = &channel
 	}
 
+	if country, ok := data["country"].(string); ok {
+		dto.Country = &country
+	}
+
 	return dto
 }
 
@@ -71,6 +76,9 @@ func (dto *CallbackDataDto) ToMap() map[string]interface{} {
 	}
 	if dto.Channel != nil {
 		result["channel"] = *dto.Channel
+	}
+	if dto.Country != nil {
+		result["country"] = *dto.Country
 	}
 	return result
 }

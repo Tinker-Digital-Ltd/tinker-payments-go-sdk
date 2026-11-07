@@ -87,9 +87,9 @@ if err != nil {
 
 The result arrives through `payment.*` webhooks. Apple Pay and Google Pay on the web need the checkout domain registered with Stripe.
 
-`Gateway` is a string: any provider id works, so a new provider needs no SDK update. `Transactions().Capabilities("KES", "KE")` lists the connected providers and what each supports (`native`, `emulated`, `manual`, `unavailable`). A request for an `unavailable` feature returns HTTP 422 `FEATURE_NOT_SUPPORTED` as `*errors.FeatureNotSupportedException` with `Gateway`, `Feature` and `Alternatives`. Payment statuses may include values added later; compare with the constants you handle and treat the rest as in progress.
+`Gateway` is a string: any provider id works, so a new provider needs no SDK update. `Transactions().Capabilities("KES", "KE")` returns `*model.PaymentCapabilities` whose `Providers` list the connected providers and what each supports (`native`, `emulated`, `manual`, `unavailable`). A request for an `unavailable` feature returns HTTP 422 `FEATURE_NOT_SUPPORTED` as `*errors.FeatureNotSupportedException` with `Gateway`, `Feature` and `Alternatives`. Payment statuses include `authorised`, `blocked` and `expired`, and may include values added later; compare with the constants you handle and treat the rest as in progress.
 
-Plan subscriptions use `Subscriptions().CreatePlan`, `ListPlans`, `Create`, `List` and `Cancel` with request DTOs in `tinker/model/dto`.
+Plan subscriptions use `Subscriptions().CreatePlan`, `ListPlans`, `UpdatePlan`, `DeletePlan`, `Create`, `List`, `Cancel` and `ListInvoices(subscriptionID, page, pageSize)` with request DTOs in `tinker/model/dto`. `UpdatePlan` and `DeletePlan` send PUT and DELETE, so a custom HTTP client must also implement `http.Doer`. `InitiatePaymentRequestDto` and `CreateSubscriptionRequestDto` take an optional ISO alpha-2 `Country`; initiate also takes `CustomerName`. `Country` is returned on payments and `payment.*` webhooks.
 
 ## Managed recurring billing
 

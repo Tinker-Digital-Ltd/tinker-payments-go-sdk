@@ -40,7 +40,7 @@ func (tm *TransactionManager) Query(request *dto.QueryPaymentRequestDto) (*model
 	return model.NewTransaction(response), nil
 }
 
-func (tm *TransactionManager) Capabilities(currency, country string) ([]model.ProviderCapability, error) {
+func (tm *TransactionManager) Capabilities(currency, country string) (*model.PaymentCapabilities, error) {
 	query := url.Values{}
 	if currency != "" {
 		query.Set("currency", currency)
@@ -56,10 +56,13 @@ func (tm *TransactionManager) Capabilities(currency, country string) ([]model.Pr
 	if err != nil {
 		return nil, err
 	}
-	raw, err := json.Marshal(response["providers"])
+	raw, err := json.Marshal(response)
 	if err != nil {
 		return nil, err
 	}
-	var providers []model.ProviderCapability
-	return providers, json.Unmarshal(raw, &providers)
+	var capabilities model.PaymentCapabilities
+	if err := json.Unmarshal(raw, &capabilities); err != nil {
+		return nil, err
+	}
+	return &capabilities, nil
 }

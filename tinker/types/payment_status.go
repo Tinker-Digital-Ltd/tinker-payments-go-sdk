@@ -4,6 +4,9 @@ type PaymentStatus string
 
 const (
 	PENDING            PaymentStatus = "pending"
+	AUTHORISED         PaymentStatus = "authorised"
+	BLOCKED            PaymentStatus = "blocked"
+	EXPIRED            PaymentStatus = "expired"
 	SUCCESS            PaymentStatus = "success"
 	CANCELLED          PaymentStatus = "cancelled"
 	FAILED             PaymentStatus = "failed"

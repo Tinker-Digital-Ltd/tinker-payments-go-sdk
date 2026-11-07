@@ -1,5 +1,9 @@
 package model
 
+type PaymentCapabilities struct {
+	Providers []ProviderCapability `json:"providers"`
+}
+
 type ProviderCapability struct {
 	Gateway      string            `json:"gateway"`
 	Name         string            `json:"name"`

@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/url"
+	"strconv"
 
 	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/auth"
 	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/config"
@@ -70,4 +71,30 @@ func (sm *SubscriptionManager) List(planID, externalCustomerID string) ([]map[st
 
 func (sm *SubscriptionManager) Cancel(subscriptionID string) (map[string]interface{}, error) {
 	return sm.request("POST", config.SUBSCRIPTION_BASE_PATH+"/"+subscriptionID+"/cancel", nil)
+}
+
+func (sm *SubscriptionManager) UpdatePlan(planID string, request *dto.CreateSubscriptionPlanRequestDto) (map[string]interface{}, error) {
+	return sm.request("PUT", config.SUBSCRIPTION_PLANS_PATH+"/"+url.PathEscape(planID), request.ToMap())
+}
+
+func (sm *SubscriptionManager) DeletePlan(planID string) (map[string]interface{}, error) {
+	return sm.request("DELETE", config.SUBSCRIPTION_PLANS_PATH+"/"+url.PathEscape(planID), nil)
+}
+
+func (sm *SubscriptionManager) ListInvoices(subscriptionID string, page, pageSize int) (map[string]interface{}, error) {
+	q := url.Values{}
+	if subscriptionID != "" {
+		q.Set("subscription_id", subscriptionID)
+	}
+	if page > 0 {
+		q.Set("page", strconv.Itoa(page))
+	}
+	if pageSize > 0 {
+		q.Set("page_size", strconv.Itoa(pageSize))
+	}
+	endpoint := config.SUBSCRIPTION_INVOICES_PATH
+	if len(q) > 0 {
+		endpoint += "?" + q.Encode()
+	}
+	return sm.request("GET", endpoint, nil)
 }

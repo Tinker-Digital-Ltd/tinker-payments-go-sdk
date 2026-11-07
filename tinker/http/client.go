@@ -14,6 +14,10 @@ type Client interface {
 	Post(url string, headers map[string]string, body []byte) (*Response, error)
 }
 
+type Doer interface {
+	Do(method, url string, headers map[string]string, body []byte) (*Response, error)
+}
+
 type HttpClient struct {
 	timeout time.Duration
 	client  *httpstd.Client
@@ -27,43 +31,25 @@ func NewHttpClient() *HttpClient {
 }
 
 func (c *HttpClient) Get(url string, headers map[string]string) (*Response, error) {
-	req, err := httpstd.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, errors.NewNetworkException("Network error: "+err.Error(), 0, err)
-	}
-	for key, value := range headers {
-		req.Header.Set(key, value)
-	}
-	resp, err := c.client.Do(req)
-	if err != nil {
-		return nil, errors.NewNetworkException("Network error: "+err.Error(), 0, err)
-	}
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		_ = resp.Body.Close()
-		return nil, errors.NewNetworkException("Network error: "+err.Error(), 0, err)
-	}
-	if err := resp.Body.Close(); err != nil {
-		return nil, errors.NewNetworkException("Network error: "+err.Error(), 0, err)
-	}
-	return NewResponse(resp.StatusCode, respBody, resp.Header), nil
+	return c.Do("GET", url, headers, nil)
 }
 
 func (c *HttpClient) Post(url string, headers map[string]string, body []byte) (*Response, error) {
+	return c.Do("POST", url, headers, body)
+}
+
+func (c *HttpClient) Do(method, url string, headers map[string]string, body []byte) (*Response, error) {
 	var bodyReader io.Reader
 	if body != nil {
 		bodyReader = bytes.NewReader(body)
 	}
-
-	req, err := httpstd.NewRequest("POST", url, bodyReader)
+	req, err := httpstd.NewRequest(method, url, bodyReader)
 	if err != nil {
 		return nil, errors.NewNetworkException("Network error: "+err.Error(), 0, err)
 	}
-
 	for key, value := range headers {
 		req.Header.Set(key, value)
 	}
-
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, errors.NewNetworkException("Network error: "+err.Error(), 0, err)
@@ -76,6 +62,5 @@ func (c *HttpClient) Post(url string, headers map[string]string, body []byte) (*
 	if err := resp.Body.Close(); err != nil {
 		return nil, errors.NewNetworkException("Network error: "+err.Error(), 0, err)
 	}
-
 	return NewResponse(resp.StatusCode, respBody, resp.Header), nil
 }

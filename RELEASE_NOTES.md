@@ -1,3 +1,10 @@
+# Unreleased
+
+- `Subscriptions().UpdatePlan`, `DeletePlan` and `ListInvoices`. A custom `http.Client` must implement `http.Doer` for PUT and DELETE.
+- Optional `Country` on initiate and subscription create, `CustomerName` on initiate; `Country` on query, callback and `payment.*` webhook data and on `PaymentDetail`.
+- **Breaking:** `Transactions().Capabilities` returns `*model.PaymentCapabilities` (`Providers`), the shape of the API `data` object, not a slice.
+- Payment status adds `authorised`, `blocked` and `expired`.
+
 # v0.10.0 — Gateway standard
 
 - `Gateway` accepts any provider id; `types.PESAPAL` added.
