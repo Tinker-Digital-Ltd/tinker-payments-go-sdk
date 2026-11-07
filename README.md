@@ -91,6 +91,57 @@ The result arrives through `payment.*` webhooks. Apple Pay and Google Pay on the
 
 Plan subscriptions use `Subscriptions().CreatePlan`, `ListPlans`, `UpdatePlan`, `DeletePlan`, `Create`, `List`, `Cancel` and `ListInvoices(subscriptionID, page, pageSize)` with request DTOs in `tinker/model/dto`. `UpdatePlan` and `DeletePlan` send PUT and DELETE, so a custom HTTP client must also implement `http.Doer`. `InitiatePaymentRequestDto` and `CreateSubscriptionRequestDto` take an optional ISO alpha-2 `Country`; initiate also takes `CustomerName`. `Country` is returned on payments and `payment.*` webhooks.
 
+## Provider examples
+
+Every provider takes the same request. Each fragment assumes a `client` and returns early on `err`. Keys and values are fake.
+
+```go
+tx := client.Transactions()
+email, phone, name := "jane@example.com", "+254712345678", "Jane Doe"
+de, gb, bnpl := "DE", "GB", "bnpl"
+
+// Redirect (Paystack, Pesapal, PayPal, Flutterwave, DPO, Interswitch, Adyen, Plaid, hosted Stripe):
+// send the customer to InitiationData.AuthorizationURL.
+payment, err := tx.Initiate(&dto.InitiatePaymentRequestDto{
+	Amount: 2500, Currency: "NGN", Gateway: "paystack", MerchantReference: "ORDER-1",
+	ReturnURL: "https://shop.example/return", CustomerEmail: &email,
+})
+
+// Phone approval (M-Pesa, MTN MoMo): no AuthorizationURL. The customer approves on their phone
+// and the result arrives as a payment.completed or payment.failed webhook.
+_, err = tx.Initiate(&dto.InitiatePaymentRequestDto{
+	Amount: 100, Currency: "KES", Gateway: types.MPESA, MerchantReference: "ORDER-2",
+	ReturnURL: "https://shop.example/return", CustomerPhone: &phone,
+})
+
+// Klarna (PaymentMethod "bnpl" on Stripe or Adyen) is captured at once. Adyen also needs Country
+// (AT DK FI DE NO SE CH NL GB US) and that country's currency.
+_, err = tx.Initiate(&dto.InitiatePaymentRequestDto{
+	Amount: 49.9, Currency: "EUR", Gateway: "adyen", MerchantReference: "ORDER-3",
+	ReturnURL: "https://shop.example/return", CustomerEmail: &email, Country: &de, PaymentMethod: &bnpl,
+})
+
+// Plaid (plaid_transfer, plaid_payments): CustomerName is required.
+// Payment Initiation INITIATED counts as paid.
+_, err = tx.Initiate(&dto.InitiatePaymentRequestDto{
+	Amount: 40, Currency: "GBP", Gateway: "plaid_payments", MerchantReference: "ORDER-4",
+	ReturnURL: "https://shop.example/return", CustomerEmail: &email, CustomerName: &name, Country: &gb,
+})
+
+// Ask first, then handle a refusal. Import "errors" and
+// apierrors "github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/errors".
+caps, err := tx.Capabilities("KES", "KE")
+for _, p := range caps.Providers {
+	fmt.Println(p.Gateway, p.Capabilities["pay_mobile_money"])
+}
+var refused *apierrors.FeatureNotSupportedException
+if errors.As(err, &refused) {
+	fmt.Println(refused.Gateway, refused.Feature, refused.Alternatives) // retry on one of Alternatives
+}
+```
+
+Pay-as-you-go apps use Tinker's provider credentials; your own need a paid plan (HTTP 403 `PAID_PLAN_REQUIRED`).
+
 ## Managed recurring billing
 
 Checkout uses exact integer minor-unit prices (`15000` = EUR 150.00), a `month` or `year` interval, and a quantity. The SDK does not convert prices or apply discounts. Responses are unwrapped data maps.
