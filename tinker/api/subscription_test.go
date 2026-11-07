@@ -52,6 +52,17 @@ func TestSubscriptionManager_UpdatePlan(t *testing.T) {
 	}
 }
 
+func TestCreatePlanRequestDto_FeaturesJSON(t *testing.T) {
+	plan := &dto.CreateSubscriptionPlanRequestDto{Name: "Pro"}
+	if _, ok := plan.ToMap()["features_json"]; ok {
+		t.Fatal("features_json must be omitted when nil")
+	}
+	plan.FeaturesJSON = map[string]interface{}{"seats": 5}
+	if plan.ToMap()["features_json"].(map[string]interface{})["seats"] != 5 {
+		t.Fatal("features_json missing")
+	}
+}
+
 func TestSubscriptionManager_DeletePlan(t *testing.T) {
 	manager, client := newPlanManager()
 	if _, err := manager.DeletePlan("plan-1"); err != nil {
