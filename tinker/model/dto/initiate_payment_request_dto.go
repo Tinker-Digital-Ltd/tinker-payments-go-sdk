@@ -12,6 +12,8 @@ type InitiatePaymentRequestDto struct {
 	ReturnURL         string
 	CustomerPhone     *string
 	CustomerEmail     *string
+	CustomerName      *string
+	Country           *string
 	TransactionDesc   *string
 	Metadata          map[string]interface{}
 	PaymentMethod     *string
@@ -31,6 +33,12 @@ func (dto *InitiatePaymentRequestDto) ToMap() map[string]interface{} {
 	}
 	if dto.CustomerEmail != nil {
 		payload["customerEmail"] = *dto.CustomerEmail
+	}
+	if dto.CustomerName != nil {
+		payload["customerName"] = *dto.CustomerName
+	}
+	if dto.Country != nil {
+		payload["country"] = *dto.Country
 	}
 	if dto.TransactionDesc != nil {
 		payload["transactionDesc"] = *dto.TransactionDesc

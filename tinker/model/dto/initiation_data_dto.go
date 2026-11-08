@@ -22,16 +22,7 @@ func NewInitiationDataDto(data map[string]interface{}) *InitiationDataDto {
 	if s, ok := data["status"].(string); ok {
 		statusValue = s
 	}
-	switch statusValue {
-	case "success":
-		dto.Status = types.SUCCESS
-	case "cancelled":
-		dto.Status = types.CANCELLED
-	case "failed":
-		dto.Status = types.FAILED
-	default:
-		dto.Status = types.PENDING
-	}
+	dto.Status = types.ParsePaymentStatus(statusValue)
 
 	if au, ok := data["authorizationUrl"].(string); ok {
 		dto.AuthorizationURL = &au

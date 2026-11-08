@@ -13,6 +13,7 @@ type CallbackDataDto struct {
 	PaidAt    *string
 	CreatedAt *string
 	Channel   *string
+	Country   *string
 }
 
 func NewCallbackDataDto(data map[string]interface{}) *CallbackDataDto {
@@ -26,16 +27,7 @@ func NewCallbackDataDto(data map[string]interface{}) *CallbackDataDto {
 	if s, ok := data["status"].(string); ok {
 		statusValue = s
 	}
-	switch statusValue {
-	case "success":
-		dto.Status = types.SUCCESS
-	case "cancelled":
-		dto.Status = types.CANCELLED
-	case "failed":
-		dto.Status = types.FAILED
-	default:
-		dto.Status = types.PENDING
-	}
+	dto.Status = types.ParsePaymentStatus(statusValue)
 
 	if ref, ok := data["reference"].(string); ok {
 		dto.Reference = ref
@@ -61,6 +53,10 @@ func NewCallbackDataDto(data map[string]interface{}) *CallbackDataDto {
 		dto.Channel = &channel
 	}
 
+	if country, ok := data["country"].(string); ok {
+		dto.Country = &country
+	}
+
 	return dto
 }
 
@@ -80,6 +76,9 @@ func (dto *CallbackDataDto) ToMap() map[string]interface{} {
 	}
 	if dto.Channel != nil {
 		result["channel"] = *dto.Channel
+	}
+	if dto.Country != nil {
+		result["country"] = *dto.Country
 	}
 	return result
 }

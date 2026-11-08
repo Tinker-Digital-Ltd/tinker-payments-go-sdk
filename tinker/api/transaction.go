@@ -1,11 +1,13 @@
 package api
 
 import (
+	"encoding/json"
 	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/auth"
 	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/config"
 	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/http"
 	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/model"
 	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/model/dto"
+	"net/url"
 )
 
 type TransactionManager struct {
@@ -36,4 +38,31 @@ func (tm *TransactionManager) Query(request *dto.QueryPaymentRequestDto) (*model
 	}
 
 	return model.NewTransaction(response), nil
+}
+
+func (tm *TransactionManager) Capabilities(currency, country string) (*model.PaymentCapabilities, error) {
+	query := url.Values{}
+	if currency != "" {
+		query.Set("currency", currency)
+	}
+	if country != "" {
+		query.Set("country", country)
+	}
+	path := config.PAYMENT_CAPABILITIES_PATH
+	if len(query) > 0 {
+		path += "?" + query.Encode()
+	}
+	response, err := tm.request("GET", path, nil)
+	if err != nil {
+		return nil, err
+	}
+	raw, err := json.Marshal(response)
+	if err != nil {
+		return nil, err
+	}
+	var capabilities model.PaymentCapabilities
+	if err := json.Unmarshal(raw, &capabilities); err != nil {
+		return nil, err
+	}
+	return &capabilities, nil
 }

@@ -11,6 +11,7 @@ type PaymentEventDataDto struct {
 	Amount    float64
 	Currency  string
 	Channel   *string
+	Country   *string
 	CreatedAt *string
 	PaidAt    *string
 }
@@ -26,16 +27,7 @@ func NewPaymentEventDataDto(data map[string]interface{}) *PaymentEventDataDto {
 	if s, ok := data["status"].(string); ok {
 		statusValue = s
 	}
-	switch statusValue {
-	case "success":
-		dto.Status = types.SUCCESS
-	case "cancelled":
-		dto.Status = types.CANCELLED
-	case "failed":
-		dto.Status = types.FAILED
-	default:
-		dto.Status = types.PENDING
-	}
+	dto.Status = types.ParsePaymentStatus(statusValue)
 
 	if ref, ok := data["reference"].(string); ok {
 		dto.Reference = ref
@@ -51,6 +43,10 @@ func NewPaymentEventDataDto(data map[string]interface{}) *PaymentEventDataDto {
 
 	if channel, ok := data["channel"].(string); ok {
 		dto.Channel = &channel
+	}
+
+	if country, ok := data["country"].(string); ok {
+		dto.Country = &country
 	}
 
 	if createdAt, ok := data["created_at"].(string); ok {
@@ -74,6 +70,9 @@ func (dto *PaymentEventDataDto) ToMap() map[string]interface{} {
 	}
 	if dto.Channel != nil {
 		result["channel"] = *dto.Channel
+	}
+	if dto.Country != nil {
+		result["country"] = *dto.Country
 	}
 	if dto.CreatedAt != nil {
 		result["created_at"] = *dto.CreatedAt

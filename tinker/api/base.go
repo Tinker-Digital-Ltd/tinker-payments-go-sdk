@@ -52,10 +52,17 @@ func (bm *BaseManager) requestWithHeaders(method, endpoint string, data map[stri
 	}
 
 	var resp *http.Response
-	if strings.EqualFold(method, "GET") {
+	switch strings.ToUpper(method) {
+	case "GET":
 		resp, err = bm.httpClient.Get(url, headers)
-	} else {
+	case "POST":
 		resp, err = bm.httpClient.Post(url, headers, body)
+	default:
+		doer, ok := bm.httpClient.(http.Doer)
+		if !ok {
+			return nil, errors.NewNetworkException("HTTP client does not support "+method, 0, nil)
+		}
+		resp, err = doer.Do(strings.ToUpper(method), url, headers, body)
 	}
 	if err != nil {
 		return nil, err
@@ -125,5 +132,23 @@ func (bm *BaseManager) apiError(resp *http.Response, result map[string]interface
 			e.RequestID = id
 		}
 	}
+	if e.ErrorCode == errors.FeatureNotSupportedCode {
+		return featureNotSupported(e)
+	}
 	return e
+}
+
+func featureNotSupported(e *errors.ApiException) error {
+	out := &errors.FeatureNotSupportedException{ApiException: e}
+	detail, _ := e.Details["error"].(map[string]interface{})
+	details, _ := detail["details"].(map[string]interface{})
+	out.Gateway, _ = details["gateway"].(string)
+	out.Feature, _ = details["feature"].(string)
+	alternatives, _ := details["alternatives"].([]interface{})
+	for _, item := range alternatives {
+		if name, ok := item.(string); ok {
+			out.Alternatives = append(out.Alternatives, name)
+		}
+	}
+	return out
 }

@@ -53,7 +53,7 @@ Payments use currency units. Mpesa requires `CustomerPhone`; `ReturnURL` is the 
 ### Apple Pay / Google Pay
 
 ```go
-method := "apple_pay" // or "google_pay"
+method := "apple_pay" // or "google_pay"; "bnpl" opens Klarna on Stripe Checkout
 payment, err := client.Transactions().Initiate(&dto.InitiatePaymentRequestDto{
 	Amount: 100, Currency: "USD", Gateway: types.STRIPE,
 	MerchantReference: "ORDER-12345",
@@ -87,7 +87,60 @@ if err != nil {
 
 The result arrives through `payment.*` webhooks. Apple Pay and Google Pay on the web need the checkout domain registered with Stripe.
 
-Plan subscriptions use `Subscriptions().CreatePlan`, `ListPlans`, `Create`, `List` and `Cancel` with request DTOs in `tinker/model/dto`.
+`Gateway` is a string: any provider id works, so a new provider needs no SDK update. `Transactions().Capabilities("KES", "KE")` returns `*model.PaymentCapabilities` whose `Providers` list the connected providers and what each supports (`native`, `emulated`, `manual`, `unavailable`). A request for an `unavailable` feature returns HTTP 422 `FEATURE_NOT_SUPPORTED` as `*errors.FeatureNotSupportedException` with `Gateway`, `Feature` and `Alternatives`. Payment statuses include `authorised`, `blocked` and `expired`, and may include values added later; compare with the constants you handle and treat the rest as in progress.
+
+Plan subscriptions use `Subscriptions().CreatePlan`, `ListPlans`, `UpdatePlan`, `DeletePlan`, `Create`, `List`, `Cancel` and `ListInvoices(subscriptionID, page, pageSize)` with request DTOs in `tinker/model/dto`. `UpdatePlan` and `DeletePlan` send PUT and DELETE, so a custom HTTP client must also implement `http.Doer`. `InitiatePaymentRequestDto` and `CreateSubscriptionRequestDto` take an optional ISO alpha-2 `Country`; initiate also takes `CustomerName`. `Country` is returned on payments and `payment.*` webhooks.
+
+## Provider examples
+
+Every provider takes the same request. Each fragment assumes a `client` and returns early on `err`. Keys and values are fake.
+
+```go
+tx := client.Transactions()
+email, phone, name := "jane@example.com", "+254712345678", "Jane Doe"
+de, gb, bnpl := "DE", "GB", "bnpl"
+
+// Redirect (Paystack, Pesapal, PayPal, Flutterwave, DPO, Interswitch, Adyen, Plaid, hosted Stripe):
+// send the customer to InitiationData.AuthorizationURL.
+payment, err := tx.Initiate(&dto.InitiatePaymentRequestDto{
+	Amount: 2500, Currency: "NGN", Gateway: "paystack", MerchantReference: "ORDER-1",
+	ReturnURL: "https://shop.example/return", CustomerEmail: &email,
+})
+
+// Phone approval (M-Pesa, MTN MoMo): no AuthorizationURL. The customer approves on their phone
+// and the result arrives as a payment.completed or payment.failed webhook.
+_, err = tx.Initiate(&dto.InitiatePaymentRequestDto{
+	Amount: 100, Currency: "KES", Gateway: types.MPESA, MerchantReference: "ORDER-2",
+	ReturnURL: "https://shop.example/return", CustomerPhone: &phone,
+})
+
+// Klarna (PaymentMethod "bnpl" on Stripe or Adyen) is captured at once. Adyen also needs Country
+// (AT DK FI DE NO SE CH NL GB US) and that country's currency.
+_, err = tx.Initiate(&dto.InitiatePaymentRequestDto{
+	Amount: 49.9, Currency: "EUR", Gateway: "adyen", MerchantReference: "ORDER-3",
+	ReturnURL: "https://shop.example/return", CustomerEmail: &email, Country: &de, PaymentMethod: &bnpl,
+})
+
+// Plaid (plaid_transfer, plaid_payments): CustomerName is required.
+// Payment Initiation INITIATED counts as paid.
+_, err = tx.Initiate(&dto.InitiatePaymentRequestDto{
+	Amount: 40, Currency: "GBP", Gateway: "plaid_payments", MerchantReference: "ORDER-4",
+	ReturnURL: "https://shop.example/return", CustomerEmail: &email, CustomerName: &name, Country: &gb,
+})
+
+// Ask first, then handle a refusal. Import "errors" and
+// apierrors "github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/errors".
+caps, err := tx.Capabilities("KES", "KE")
+for _, p := range caps.Providers {
+	fmt.Println(p.Gateway, p.Capabilities["pay_mobile_money"])
+}
+var refused *apierrors.FeatureNotSupportedException
+if errors.As(err, &refused) {
+	fmt.Println(refused.Gateway, refused.Feature, refused.Alternatives) // retry on one of Alternatives
+}
+```
+
+Pay-as-you-go apps use Tinker's provider credentials; your own need a paid plan (HTTP 403 `PAID_PLAN_REQUIRED`).
 
 ## Managed recurring billing
 
@@ -124,7 +177,7 @@ _, err := billing.ExpireCheckout("checkout-id", "expire-checkout-1")
 
 ### Trials with a required payment method
 
-Set `TrialDays` (1 to 730) or an exact `TrialEnd` (`*time.Time`, 48 hours to 730 days ahead; cannot be combined with `TrialDays`) to collect a card at checkout and charge first when the trial ends. The SDK sends `trial_days` only when it is above 0 and `trial_end` only when set, so checkouts without a trial keep working against servers released before trial support. A gateway without trial support returns HTTP 422 `TRIAL_UNSUPPORTED` with `outcome: not_applied`. Limiting a customer to one trial is the app's responsibility.
+Set `TrialDays` (1 to 730) or an exact `TrialEnd` (`*time.Time`, 48 hours to 730 days ahead; cannot be combined with `TrialDays`) to collect a card at checkout and charge first when the trial ends. The SDK sends `trial_days` only when it is above 0 and `trial_end` only when set, so checkouts without a trial keep working against servers released before trial support. A gateway without trial support returns HTTP 422 `FEATURE_NOT_SUPPORTED` with `outcome: not_applied`. Limiting a customer to one trial is the app's responsibility.
 
 ```go
 checkout, err := billing.Checkout(api.ManagedCheckout{
@@ -164,7 +217,7 @@ The app owner must enable withdrawal requests in app settings. A payout is a wit
 
 Supply a stable `Idempotency-Key` for every refund, payout or cancellation request. Keys are trimmed and must be 1–255 UTF-8 bytes. Reuse the same key and semantic request after transport failures; a changed request conflicts. A replay returns the original resource and fee snapshot. Start a new key for a new intended operation.
 
-A refund's `pending_review`/`approved` state and a payout's `pending_approval`/`approved` state are not completion. Only `refunded`, `paid` or provider-confirmed `cancelled` establishes completion. Preserve cancellation `outcome_unknown` and poll by ID; do not blindly submit another request. Unsupported cancellation raises HTTP 422 `CHECKOUT_CANCELLATION_UNSUPPORTED` and retains the persisted `request_id`/`status` in error details. Lifecycle conflicts use HTTP 409; replaying a persisted rejection retains its 422/409 result.
+A refund's `pending_review`/`approved` state and a payout's `pending_approval`/`approved` state are not completion. Only `refunded`, `paid` or provider-confirmed `cancelled` establishes completion. Preserve cancellation `outcome_unknown` and poll by ID; do not blindly submit another request. Unsupported cancellation raises HTTP 422 `FEATURE_NOT_SUPPORTED` and retains the persisted `request_id`/`status` in error details. Lifecycle conflicts use HTTP 409; replaying a persisted rejection retains its 422/409 result.
 
 Refund history includes refundable amounts and `refund_capability`. Cancellation history includes `capability`, the newest 100 requests and `has_more`; retrieve older known requests by ID. Payout listing accepts `page`, `per_page` (maximum 100), `status` and `currency`. Reads are scoped to the app; payout reads show only requests attributed to that app.
 

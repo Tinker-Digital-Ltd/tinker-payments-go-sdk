@@ -95,6 +95,7 @@ type PaymentDetail struct {
 	Status           string            `json:"status"`
 	Amount           float64           `json:"amount"`
 	Currency         string            `json:"currency"`
+	Country          string            `json:"country,omitempty"`
 	RefundableAmount *float64          `json:"refundable_amount,omitempty"`
 	RefundCapability *RefundCapability `json:"refund_capability,omitempty"`
 	Refunds          []Refund          `json:"refunds,omitempty"`
