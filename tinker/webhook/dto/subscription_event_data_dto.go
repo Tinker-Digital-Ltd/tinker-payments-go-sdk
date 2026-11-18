@@ -11,6 +11,13 @@ type SubscriptionEventDataDto struct {
 	CancelledAt        *string
 	PausedAt           *string
 	ReactivatedAt      *string
+
+	ProductID               *string
+	EntitlementIDs          []string
+	Store                   *string
+	PeriodType              *string
+	ExpirationAt            *string
+	GracePeriodExpirationAt *string
 }
 
 func NewSubscriptionEventDataDto(data map[string]interface{}) *SubscriptionEventDataDto {
@@ -51,6 +58,12 @@ func NewSubscriptionEventDataDto(data map[string]interface{}) *SubscriptionEvent
 	if reactivatedAt, ok := data["reactivated_at"].(string); ok {
 		dto.ReactivatedAt = &reactivatedAt
 	}
+	dto.ProductID = optionalString(data, "product_id")
+	dto.EntitlementIDs = stringList(data["entitlement_ids"])
+	dto.Store = optionalString(data, "store")
+	dto.PeriodType = optionalString(data, "period_type")
+	dto.ExpirationAt = optionalString(data, "expiration_at")
+	dto.GracePeriodExpirationAt = optionalString(data, "grace_period_expiration_at")
 	return dto
 }
 
@@ -70,6 +83,14 @@ func (dto *SubscriptionEventDataDto) ToMap() map[string]interface{} {
 	}
 	if dto.ReactivatedAt != nil {
 		result["reactivated_at"] = *dto.ReactivatedAt
+	}
+	for key, value := range map[string]*string{"product_id": dto.ProductID, "store": dto.Store, "period_type": dto.PeriodType, "expiration_at": dto.ExpirationAt, "grace_period_expiration_at": dto.GracePeriodExpirationAt} {
+		if value != nil {
+			result[key] = *value
+		}
+	}
+	if dto.EntitlementIDs != nil {
+		result["entitlement_ids"] = dto.EntitlementIDs
 	}
 	return result
 }

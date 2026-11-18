@@ -112,6 +112,9 @@ func (e *Event) ToTransaction() *model.Transaction {
 }
 
 func createEventData(data map[string]interface{}, source string, eventType string) (interface{}, error) {
+	if source == "entitlement" || (source == "payment" && eventType == "purchase.completed") {
+		return webhookDto.NewEntitlementEventData(data), nil
+	}
 	if source == "payment" {
 		switch {
 		case strings.HasPrefix(eventType, "checkout.cancellation.updated."):
@@ -123,6 +126,8 @@ func createEventData(data map[string]interface{}, source string, eventType strin
 		}
 	}
 	switch source {
+	case "customer":
+		return webhookDto.NewCustomerEventData(data), nil
 	case "onboarding":
 		return webhookDto.NewOnboardingEventDataDto(data), nil
 	case "payment":
@@ -152,5 +157,14 @@ func (e *Event) RefundData() *webhookDto.ResourceLifecycleEventData[model.Refund
 }
 func (e *Event) WithdrawalData() *webhookDto.ResourceLifecycleEventData[model.Payout] {
 	data, _ := e.Data.(*webhookDto.ResourceLifecycleEventData[model.Payout])
+	return data
+}
+
+func (e *Event) EntitlementData() *webhookDto.EntitlementEventData {
+	data, _ := e.Data.(*webhookDto.EntitlementEventData)
+	return data
+}
+func (e *Event) CustomerData() *webhookDto.CustomerEventData {
+	data, _ := e.Data.(*webhookDto.CustomerEventData)
 	return data
 }

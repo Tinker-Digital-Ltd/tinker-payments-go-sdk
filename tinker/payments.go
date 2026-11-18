@@ -16,6 +16,13 @@ type Payments struct {
 	transactionManager  *api.TransactionManager
 	payoutManager       *api.PayoutManager
 	subscriptionManager *api.SubscriptionManager
+	customerManager     *api.CustomerManager
+	entitlementManager  *api.EntitlementManager
+	productManager      *api.ProductManager
+	offeringManager     *api.OfferingManager
+	metricsManager      *api.MetricsManager
+	experimentManager   *api.ExperimentManager
+	integrationManager  *api.IntegrationManager
 	webhookHandler      *webhook.Handler
 }
 
@@ -52,6 +59,55 @@ func (p *Payments) Payouts() *api.PayoutManager {
 		p.payoutManager = api.NewPayoutManager(p.config, p.httpClient, p.authManager)
 	}
 	return p.payoutManager
+}
+
+func (p *Payments) Customers() *api.CustomerManager {
+	if p.customerManager == nil {
+		p.customerManager = api.NewCustomerManager(p.config, p.httpClient, p.authManager)
+	}
+	return p.customerManager
+}
+
+func (p *Payments) Entitlements() *api.EntitlementManager {
+	if p.entitlementManager == nil {
+		p.entitlementManager = api.NewEntitlementManager(p.config, p.httpClient, p.authManager)
+	}
+	return p.entitlementManager
+}
+
+func (p *Payments) Products() *api.ProductManager {
+	if p.productManager == nil {
+		p.productManager = api.NewProductManager(p.config, p.httpClient, p.authManager)
+	}
+	return p.productManager
+}
+
+func (p *Payments) Offerings() *api.OfferingManager {
+	if p.offeringManager == nil {
+		p.offeringManager = api.NewOfferingManager(p.config, p.httpClient, p.authManager)
+	}
+	return p.offeringManager
+}
+
+func (p *Payments) Metrics() *api.MetricsManager {
+	if p.metricsManager == nil {
+		p.metricsManager = api.NewMetricsManager(p.config, p.httpClient, p.authManager)
+	}
+	return p.metricsManager
+}
+
+func (p *Payments) Experiments() *api.ExperimentManager {
+	if p.experimentManager == nil {
+		p.experimentManager = api.NewExperimentManager(p.config, p.httpClient, p.authManager)
+	}
+	return p.experimentManager
+}
+
+func (p *Payments) Integrations() *api.IntegrationManager {
+	if p.integrationManager == nil {
+		p.integrationManager = api.NewIntegrationManager(p.config, p.httpClient, p.authManager)
+	}
+	return p.integrationManager
 }
 
 func (p *Payments) Webhooks() *webhook.Handler {

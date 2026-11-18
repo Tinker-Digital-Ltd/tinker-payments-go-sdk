@@ -142,6 +142,34 @@ if errors.As(err, &refused) {
 
 Pay-as-you-go apps use Tinker's provider credentials; your own need a paid plan (HTTP 403 `PAID_PLAN_REQUIRED`).
 
+## Customer access
+
+Server-side access for one-time products and subscriptions. Responses are unwrapped `map[string]interface{}` data (`api.Body`).
+
+```go
+customers := client.Customers()
+customers.Get("cust-123")
+customers.GetEntitlement("cust-123", "pro")
+customers.GrantPromotionalEntitlement("cust-123", "pro", api.Body{"duration": "P7D"})
+customers.RevokePromotionalEntitlements("cust-123", "pro")
+customers.Alias("cust-123", body)
+customers.Transfer("cust-123", body)
+customers.SetAttributes("cust-123", body)
+customers.GetOfferings("cust-123")
+customers.CreateToken("cust-123") // short-lived token for client SDKs
+
+client.Entitlements() // List, Create, Get, Update, Delete, AttachProducts, DetachProducts
+client.Products()     // List, Create, Get, Update
+client.Offerings()    // List, Create, Get, Update, Delete
+client.Experiments()  // List, Create, Get, Stop
+client.Integrations() // List, Upsert, Delete, Test (kind: slack, segment, mixpanel)
+client.Metrics().Get("2026-01-01", "2026-01-31") // dates optional
+client.Subscriptions().ListRenewalPrompts("sub-123")
+client.Subscriptions().SendRenewalPrompt("sub-123")
+```
+
+`InitiatePaymentRequestDto` accepts `ProductID`, `ExternalCustomerID` and `PresentedOfferingID`. Webhooks add `purchase.completed`, `entitlement.*` (`EntitlementData()`), `customer.transferred` (`CustomerData()`) and `subscription.billing_issue`.
+
 ## Managed recurring billing
 
 Checkout uses exact integer minor-unit prices (`15000` = EUR 150.00), a `month` or `year` interval, and a quantity. The SDK does not convert prices or apply discounts. Responses are unwrapped data maps.
