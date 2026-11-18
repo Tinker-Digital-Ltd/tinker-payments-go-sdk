@@ -148,23 +148,23 @@ Server-side access for one-time products and subscriptions. Responses are unwrap
 
 ```go
 customers := client.Customers()
-customers.Get("cust-123")
+customers.GetCustomer("cust-123")
 customers.GetEntitlement("cust-123", "pro")
-customers.GrantPromotionalEntitlement("cust-123", "pro", api.Body{"duration": "P7D"})
+customers.GrantPromotionalEntitlement("cust-123", "pro", "P7D", "") // duration, endTime
 customers.RevokePromotionalEntitlements("cust-123", "pro")
-customers.Alias("cust-123", body)
-customers.Transfer("cust-123", body)
-customers.SetAttributes("cust-123", body)
+customers.Alias("cust-123", "alias-id")
+customers.Transfer("cust-123", "cust-456")
+customers.SetAttributes("cust-123", map[string]*string{"plan": &plan})
 customers.GetOfferings("cust-123")
-customers.CreateToken("cust-123") // short-lived token for client SDKs
+customers.CreateToken("cust-123", 3600) // seconds, 0 for default
 
-client.Entitlements() // List, Create, Get, Update, Delete, AttachProducts, DetachProducts
+client.Entitlements() // List, Create, Get, Update(id, displayName), Delete, AttachProducts(id, productIDs), DetachProducts(id, productIDs)
 client.Products()     // List, Create, Get, Update
 client.Offerings()    // List, Create, Get, Update, Delete
 client.Experiments()  // List, Create, Get, Stop
-client.Integrations() // List, Upsert, Delete, Test (kind: slack, segment, mixpanel)
+client.Integrations() // List, Put, Delete, Test (kind: slack, segment, mixpanel)
 client.Metrics().Get("2026-01-01", "2026-01-31") // dates optional
-client.Subscriptions().ListRenewalPrompts("sub-123")
+client.Subscriptions().ListRenewalPrompts("") // subscription ID optional
 client.Subscriptions().SendRenewalPrompt("sub-123")
 ```
 

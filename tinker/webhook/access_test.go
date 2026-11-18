@@ -16,8 +16,8 @@ func TestAccessEvents(t *testing.T) {
 	if err != nil || moved.CustomerData().TransferredTo[0] != "b" {
 		t.Fatalf("customer.transferred misparsed: %v", err)
 	}
-	sub, err := handler.Handle([]byte(`{"id":"e","type":"subscription.billing_issue","source":"subscription","data":{"subscription_id":"s","product_id":"p","entitlement_ids":["pro"],"grace_period_expiration_at":"g"}}`))
-	if err != nil || *sub.SubscriptionData().GracePeriodExpirationAt != "g" || sub.SubscriptionData().EntitlementIDs[0] != "pro" {
+	sub, err := handler.Handle([]byte(`{"id":"e","type":"subscription.billing_issue","source":"subscription","data":{"subscription_id":"s","external_customer_id":"u1","product_id":"p","entitlement_ids":["pro"],"grace_period_expiration_at":"g"}}`))
+	if err != nil || *sub.SubscriptionData().GracePeriodExpirationAt != "g" || sub.SubscriptionData().EntitlementIDs[0] != "pro" || *sub.SubscriptionData().ExternalCustomerID != "u1" {
 		t.Fatalf("subscription.billing_issue misparsed: %v", err)
 	}
 }
