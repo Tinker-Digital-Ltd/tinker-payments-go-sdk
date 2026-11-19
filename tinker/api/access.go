@@ -43,6 +43,7 @@ func (m *CustomerManager) GetEntitlement(id, identifier string) (Body, error) {
 	return m.request("GET", customerPath(id, "/entitlements/"+url.PathEscape(identifier)), nil)
 }
 
+// GrantPromotionalEntitlement sets duration or endTime, not both; endTime is RFC3339.
 func (m *CustomerManager) GrantPromotionalEntitlement(id, identifier, duration, endTime string) (Body, error) {
 	body := Body{}
 	if duration != "" {

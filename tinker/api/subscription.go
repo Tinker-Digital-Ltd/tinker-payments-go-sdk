@@ -21,19 +21,7 @@ func (sm *SubscriptionManager) CreatePlan(request *dto.CreateSubscriptionPlanReq
 }
 
 func (sm *SubscriptionManager) ListPlans() ([]map[string]interface{}, error) {
-	res, err := sm.request("GET", config.SUBSCRIPTION_PLANS_PATH, nil)
-	if err != nil {
-		return nil, err
-	}
-	out := []map[string]interface{}{}
-	if value, ok := res["value"].([]interface{}); ok {
-		for _, v := range value {
-			if m, ok := v.(map[string]interface{}); ok {
-				out = append(out, m)
-			}
-		}
-	}
-	return out, nil
+	return listOf(sm.request("GET", config.SUBSCRIPTION_PLANS_PATH, nil))
 }
 
 func (sm *SubscriptionManager) Create(request *dto.CreateSubscriptionRequestDto) (map[string]interface{}, error) {
@@ -53,20 +41,7 @@ func (sm *SubscriptionManager) List(planID, externalCustomerID string) ([]map[st
 		endpoint += "?" + q.Encode()
 	}
 
-	res, err := sm.request("GET", endpoint, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	out := []map[string]interface{}{}
-	if value, ok := res["value"].([]interface{}); ok {
-		for _, v := range value {
-			if m, ok := v.(map[string]interface{}); ok {
-				out = append(out, m)
-			}
-		}
-	}
-	return out, nil
+	return listOf(sm.request("GET", endpoint, nil))
 }
 
 func (sm *SubscriptionManager) Cancel(subscriptionID string) (map[string]interface{}, error) {

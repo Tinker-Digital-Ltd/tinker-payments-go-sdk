@@ -150,13 +150,13 @@ Server-side access for one-time products and subscriptions. Responses are unwrap
 customers := client.Customers()
 customers.GetCustomer("cust-123")
 customers.GetEntitlement("cust-123", "pro")
-customers.GrantPromotionalEntitlement("cust-123", "pro", "P7D", "") // duration, endTime
+customers.GrantPromotionalEntitlement("cust-123", "pro", "P7D", "") // duration or endTime (RFC3339), mutually exclusive
 customers.RevokePromotionalEntitlements("cust-123", "pro")
 customers.Alias("cust-123", "alias-id")
 customers.Transfer("cust-123", "cust-456")
 customers.SetAttributes("cust-123", map[string]*string{"plan": &plan})
 customers.GetOfferings("cust-123")
-customers.CreateToken("cust-123", 3600) // seconds, 0 for default
+customers.CreateToken("cust-123", 3600) // seconds, 0 for default; the app needs a public key first: new apps get one automatically, otherwise 409 PUBLIC_KEY_REQUIRED
 
 client.Entitlements() // List, Create, Get, Update(id, displayName), Delete, AttachProducts(id, productIDs), DetachProducts(id, productIDs)
 client.Products()     // List, Create, Get, Update
