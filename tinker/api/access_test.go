@@ -30,7 +30,10 @@ func TestAccessManagers(t *testing.T) {
 	}{
 		{"customer get", func() error { _, e := customers.GetCustomer("u/1"); return e }, "GET", "merchant/customers/u%2F1", false},
 		{"get entitlement", func() error { _, e := customers.GetEntitlement("u1", "pro"); return e }, "GET", "merchant/customers/u1/entitlements/pro", false},
-		{"grant", func() error { _, e := customers.GrantPromotionalEntitlement("u1", "pro", "P7D", ""); return e }, "POST", "merchant/customers/u1/entitlements/pro/promotional", true},
+		{"grant", func() error {
+			_, e := customers.GrantPromotionalEntitlement("u1", "pro", PromotionalGrant{Duration: "P7D"})
+			return e
+		}, "POST", "merchant/customers/u1/entitlements/pro/promotional", true},
 		{"revoke", func() error { _, e := customers.RevokePromotionalEntitlements("u1", "pro"); return e }, "POST", "merchant/customers/u1/entitlements/pro/revoke_promotionals", false},
 		{"alias", func() error { _, e := customers.Alias("u1", "a"); return e }, "POST", "merchant/customers/u1/alias", true},
 		{"transfer", func() error { _, e := customers.Transfer("u1", "u2"); return e }, "POST", "merchant/customers/u1/transfer", true},
@@ -64,8 +67,9 @@ func TestAccessManagers(t *testing.T) {
 		{"integrations put", func() error { _, e := integrations.Put("slack", body); return e }, "PUT", "merchant/integrations/slack", true},
 		{"integrations delete", func() error { _, e := integrations.Delete("slack"); return e }, "DELETE", "merchant/integrations/slack", false},
 		{"integrations test", func() error { _, e := integrations.Test("slack"); return e }, "POST", "merchant/integrations/slack/test", false},
-		{"renewal prompts", func() error { _, e := subs.ListRenewalPrompts("sub_1"); return e }, "GET", "merchant/subscriptions/renewal_prompts?subscription_id=sub_1", false},
-		{"renewal prompts all", func() error { _, e := subs.ListRenewalPrompts(""); return e }, "GET", "merchant/subscriptions/renewal_prompts", false},
+		{"renewal prompts", func() error { _, e := subs.ListRenewalPrompts("sub_1", 0, 0); return e }, "GET", "merchant/subscriptions/renewal_prompts?subscription_id=sub_1", false},
+		{"renewal prompts paged", func() error { _, e := subs.ListRenewalPrompts("sub_1", 2, 50); return e }, "GET", "merchant/subscriptions/renewal_prompts?page=2&page_size=50&subscription_id=sub_1", false},
+		{"renewal prompts all", func() error { _, e := subs.ListRenewalPrompts("", 0, 0); return e }, "GET", "merchant/subscriptions/renewal_prompts", false},
 		{"send renewal prompt", func() error { _, e := subs.SendRenewalPrompt("sub_1"); return e }, "POST", "merchant/subscriptions/sub_1/renewal_prompt", false},
 	}
 	for _, c := range cases {
@@ -77,6 +81,23 @@ func TestAccessManagers(t *testing.T) {
 		}
 		if (client.body != nil) != c.body {
 			t.Errorf("%s: body = %v", c.name, client.body)
+		}
+	}
+}
+
+func TestPromotionalGrantBody(t *testing.T) {
+	cfg := config.NewConfiguration("public-key", "secret-key")
+	client := &planHTTP{}
+	customers := NewCustomerManager(cfg, client, auth.NewManager(cfg, client))
+	for _, c := range []struct {
+		grant PromotionalGrant
+		key   string
+	}{{PromotionalGrant{Duration: "P7D"}, "duration"}, {PromotionalGrant{EndTime: "2030-01-01T00:00:00Z"}, "end_time"}} {
+		if _, err := customers.GrantPromotionalEntitlement("u1", "pro", c.grant); err != nil {
+			t.Fatal(err)
+		}
+		if len(client.body) != 1 || client.body[c.key] == nil {
+			t.Errorf("body = %v, want only %s", client.body, c.key)
 		}
 	}
 }

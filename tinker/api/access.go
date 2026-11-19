@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/url"
+	"strconv"
 
 	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/auth"
 	"github.com/Tinker-Digital-Ltd/tinker-payments-go-sdk/tinker/config"
@@ -43,14 +44,19 @@ func (m *CustomerManager) GetEntitlement(id, identifier string) (Body, error) {
 	return m.request("GET", customerPath(id, "/entitlements/"+url.PathEscape(identifier)), nil)
 }
 
-// GrantPromotionalEntitlement sets duration or endTime, not both; endTime is RFC3339.
-func (m *CustomerManager) GrantPromotionalEntitlement(id, identifier, duration, endTime string) (Body, error) {
+// PromotionalGrant sets Duration or EndTime, not both; both empty grants access until revoked. EndTime is RFC3339.
+type PromotionalGrant struct {
+	Duration string
+	EndTime  string
+}
+
+func (m *CustomerManager) GrantPromotionalEntitlement(id, identifier string, grant PromotionalGrant) (Body, error) {
 	body := Body{}
-	if duration != "" {
-		body["duration"] = duration
+	if grant.Duration != "" {
+		body["duration"] = grant.Duration
 	}
-	if endTime != "" {
-		body["end_time"] = endTime
+	if grant.EndTime != "" {
+		body["end_time"] = grant.EndTime
 	}
 	return m.request("POST", customerPath(id, "/entitlements/"+url.PathEscape(identifier)+"/promotional"), body)
 }
@@ -77,7 +83,7 @@ func (m *CustomerManager) GetOfferings(id string) (Body, error) {
 
 func (m *CustomerManager) CreateToken(id string, expiresIn int) (Body, error) {
 	var body Body
-	if expiresIn > 0 {
+	if expiresIn != 0 {
 		body = Body{"expires_in": expiresIn}
 	}
 	return m.request("POST", customerPath(id, "/token"), body)
@@ -234,12 +240,22 @@ func (m *IntegrationManager) Test(kind string) (Body, error) {
 	return m.request("POST", config.INTEGRATIONS_PATH+"/"+url.PathEscape(kind)+"/test", nil)
 }
 
-func (sm *SubscriptionManager) ListRenewalPrompts(subscriptionID string) ([]Body, error) {
-	endpoint := config.SUBSCRIPTION_RENEWAL_PROMPTS_PATH
+func (sm *SubscriptionManager) ListRenewalPrompts(subscriptionID string, page, pageSize int) (Body, error) {
+	q := url.Values{}
 	if subscriptionID != "" {
-		endpoint += "?" + url.Values{"subscription_id": {subscriptionID}}.Encode()
+		q.Set("subscription_id", subscriptionID)
 	}
-	return listOf(sm.request("GET", endpoint, nil))
+	if page > 0 {
+		q.Set("page", strconv.Itoa(page))
+	}
+	if pageSize > 0 {
+		q.Set("page_size", strconv.Itoa(pageSize))
+	}
+	endpoint := config.SUBSCRIPTION_RENEWAL_PROMPTS_PATH
+	if len(q) > 0 {
+		endpoint += "?" + q.Encode()
+	}
+	return sm.request("GET", endpoint, nil)
 }
 
 func (sm *SubscriptionManager) SendRenewalPrompt(subscriptionID string) (Body, error) {

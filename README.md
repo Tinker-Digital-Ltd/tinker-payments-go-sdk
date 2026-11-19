@@ -89,8 +89,6 @@ The result arrives through `payment.*` webhooks. Apple Pay and Google Pay on the
 
 `Gateway` is a string: any provider id works, so a new provider needs no SDK update. `Transactions().Capabilities("KES", "KE")` returns `*model.PaymentCapabilities` whose `Providers` list the connected providers and what each supports (`native`, `emulated`, `manual`, `unavailable`). A request for an `unavailable` feature returns HTTP 422 `FEATURE_NOT_SUPPORTED` as `*errors.FeatureNotSupportedException` with `Gateway`, `Feature` and `Alternatives`. Payment statuses include `authorised`, `blocked` and `expired`, and may include values added later; compare with the constants you handle and treat the rest as in progress.
 
-Plan subscriptions use `Subscriptions().CreatePlan`, `ListPlans`, `UpdatePlan`, `DeletePlan`, `Create`, `List`, `Cancel` and `ListInvoices(subscriptionID, page, pageSize)` with request DTOs in `tinker/model/dto`. `UpdatePlan` and `DeletePlan` send PUT and DELETE, so a custom HTTP client must also implement `http.Doer`. `InitiatePaymentRequestDto` and `CreateSubscriptionRequestDto` take an optional ISO alpha-2 `Country`; initiate also takes `CustomerName`. `Country` is returned on payments and `payment.*` webhooks.
-
 ## Provider examples
 
 Every provider takes the same request. Each fragment assumes a `client` and returns early on `err`. Keys and values are fake.
@@ -142,33 +140,27 @@ if errors.As(err, &refused) {
 
 Pay-as-you-go apps use Tinker's provider credentials; your own need a paid plan (HTTP 403 `PAID_PLAN_REQUIRED`).
 
-## Customer access
-
-Server-side access for one-time products and subscriptions. Responses are unwrapped `map[string]interface{}` data (`api.Body`).
+## Plan subscriptions
 
 ```go
-customers := client.Customers()
-customers.GetCustomer("cust-123")
-customers.GetEntitlement("cust-123", "pro")
-customers.GrantPromotionalEntitlement("cust-123", "pro", "P7D", "") // duration or endTime (RFC3339), mutually exclusive
-customers.RevokePromotionalEntitlements("cust-123", "pro")
-customers.Alias("cust-123", "alias-id")
-customers.Transfer("cust-123", "cust-456")
-customers.SetAttributes("cust-123", map[string]*string{"plan": &plan})
-customers.GetOfferings("cust-123")
-customers.CreateToken("cust-123", 3600) // seconds, 0 for default; the app needs a public key first: new apps get one automatically, otherwise 409 PUBLIC_KEY_REQUIRED
-
-client.Entitlements() // List, Create, Get, Update(id, displayName), Delete, AttachProducts(id, productIDs), DetachProducts(id, productIDs)
-client.Products()     // List, Create, Get, Update
-client.Offerings()    // List, Create, Get, Update, Delete
-client.Experiments()  // List, Create, Get, Stop
-client.Integrations() // List, Put, Delete, Test (kind: slack, segment, mixpanel)
-client.Metrics().Get("2026-01-01", "2026-01-31") // dates optional
-client.Subscriptions().ListRenewalPrompts("") // subscription ID optional
-client.Subscriptions().SendRenewalPrompt("sub-123")
+subs := client.Subscriptions()
+email := "customer@example.com"
+plan, _ := subs.CreatePlan(&dto.CreateSubscriptionPlanRequestDto{
+    Name: "Pro", Amount: 1000, Currency: "KES", Intervals: []string{"monthly"}, IsActive: true,
+})
+subs.ListPlans()
+sub, _ := subs.Create(&dto.CreateSubscriptionRequestDto{
+    PlanID: plan["id"].(string), Gateway: "stripe",
+    Customer: &dto.SubscriptionCustomerDto{ExternalCustomerID: "cust_123", Name: "Jane Doe", Email: &email},
+})
+subs.List("plan_123", "cust_123") // both optional ("")
+subs.UpdatePlan("plan_123", &dto.CreateSubscriptionPlanRequestDto{Name: "Pro", Amount: 10, Currency: "EUR", Intervals: []string{"monthly"}, IsActive: true})
+subs.DeletePlan("plan_123")
+subs.ListInvoices("sub_123", 1, 25) // all arguments optional ("" or 0)
+subs.Cancel(sub["subscription_id"].(string))
 ```
 
-`InitiatePaymentRequestDto` accepts `ProductID`, `ExternalCustomerID` and `PresentedOfferingID`. Webhooks add `purchase.completed`, `entitlement.*` (`EntitlementData()`), `customer.transferred` (`CustomerData()`) and `subscription.billing_issue`.
+`UpdatePlan` and `DeletePlan` send PUT and DELETE, so a custom HTTP client must also implement `http.Doer`. `InitiatePaymentRequestDto` and `CreateSubscriptionRequestDto` take an optional ISO alpha-2 `Country`; initiate also takes `CustomerName`. `Country` is returned on payments and `payment.*` webhooks.
 
 ## Managed recurring billing
 
@@ -238,6 +230,42 @@ The payment-method portal changes payment details only; quantity, price and over
 For payment history, keep the returned `snapshot` across `next_cursor` pages until `has_more` is false. Amounts are integer minor units and timestamps are UTC RFC3339. History covers captured cash, tax-exclusive eligible amounts, refunds, and dispute principal withdrawals/reinstatements (`reverses_id` identifies the reversed withdrawal).
 
 Quarantine items with `reconciliation_reason` and verify every page before committing a scan. The snapshot is an event cutoff, not an immutable provider snapshot: rescan from the first page to discover later adjustments, then apply facts idempotently by payment/adjustment ID. Zero-cash invoices advance pagination without an item. Processing/dispute fees are excluded from eligible principal; currency conversion and customer credits need explicit reconciliation.
+
+## Customer access
+
+Server-side access for one-time products and subscriptions, keyed by your own customer ID. An unknown customer fails with 404 `CUSTOMER_NOT_FOUND`. Responses are unwrapped `map[string]interface{}` data (`api.Body`; lists are `[]api.Body`).
+
+```go
+customers := client.Customers()
+customer, _ := customers.GetCustomer("cust_123")
+pro, _ := customers.GetEntitlement("cust_123", "pro")
+if pro["is_active"] == true { /* grant access */ }
+
+customers.GrantPromotionalEntitlement("cust_123", "pro", api.PromotionalGrant{Duration: "P1W"}) // or EndTime: RFC3339, not both; neither grants access until revoked
+customers.RevokePromotionalEntitlements("cust_123", "pro")
+customers.Alias("cust_123", "anon_456")
+customers.Transfer("anon_456", "cust_123")
+customers.SetAttributes("cust_123", map[string]*string{"$email": &email}) // nil removes an attribute
+offerings, _ := customers.GetOfferings("cust_123") // current_offering_identifier, experiment, offerings
+token, _ := customers.CreateToken("cust_123", 3600) // token, public_key, expires_at; 60 to 86400 seconds, 0 for the default 3600; the app needs a public key first: new apps get one automatically, otherwise 409 PUBLIC_KEY_REQUIRED
+```
+
+Catalogue and reporting:
+
+```go
+pro, _ := client.Entitlements().Create(api.Body{"identifier": "pro", "display_name": "Pro"})
+client.Entitlements().AttachProducts(pro["id"].(string), []string{productID}) // also DetachProducts, List, Get, Update, Delete
+client.Products().Create(api.Body{"name": "Credit pack", "price": 5, "currency": "USD", "access_period": "P30D"}) // List, Get, Update
+client.Offerings().Create(api.Body{"identifier": "default", "is_current": true, "packages": []api.Body{{"identifier": "monthly", "product_id": productID}}}) // List, Get, Update, Delete
+client.Experiments().Create(api.Body{"name": "Price test", "control_offering_id": a, "treatment_offering_id": b}) // List, Get, Stop
+client.Integrations().Put("slack", api.Body{"secret": webhookURL, "enabled": true}) // List, Delete, Test (kind: slack, segment, mixpanel)
+client.Metrics().Get("2026-01-01", "2026-01-31") // both dates optional ("")
+client.Subscriptions().ListInvoices("sub_123", 1, 25) // all arguments optional ("" or 0); returns items, total, page, page_size
+client.Subscriptions().ListRenewalPrompts("sub_123", 1, 25) // same paging and result shape
+client.Subscriptions().SendRenewalPrompt("sub_123")
+```
+
+`InitiatePaymentRequestDto` accepts `ProductID`, `ExternalCustomerID` and `PresentedOfferingID`. Webhooks add `subscription.billing_issue`, `customer.transferred` (`CustomerData()`), `purchase.completed`, `entitlement.granted`, `entitlement.revoked` and `entitlement.expired` (`EntitlementData()`).
 
 ## Refunds, wallet withdrawals and checkout cancellation
 
