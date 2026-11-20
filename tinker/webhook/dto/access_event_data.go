@@ -19,32 +19,36 @@ func stringList(value interface{}) []string {
 }
 
 type EntitlementEventData struct {
-	ID                  *string
-	TransactionID       *string
-	ProductID           *string
-	ExternalCustomerID  string
-	EntitlementIDs      []string
-	Store               string
-	PeriodType          string
-	Amount              *float64
-	Currency            *string
-	PurchasedAt         *string
-	ExpirationAt        *string
-	PresentedOfferingID *string
-	RevokedAt           *string
+	ID                    *string
+	TransactionID         *string
+	ProductID             *string
+	ExternalCustomerID    string
+	EntitlementIDs        []string
+	Store                 string
+	PeriodType            string
+	Amount                *float64
+	Currency              *string
+	PurchasedAt           *string
+	ExpirationAt          *string
+	PresentedOfferingID   *string
+	RevokedAt             *string
+	Environment           *string
+	OriginalTransactionID *string
 }
 
 func NewEntitlementEventData(data map[string]interface{}) *EntitlementEventData {
 	out := &EntitlementEventData{
-		ID:                  optionalString(data, "id"),
-		TransactionID:       optionalString(data, "transaction_id"),
-		ProductID:           optionalString(data, "product_id"),
-		EntitlementIDs:      stringList(data["entitlement_ids"]),
-		Currency:            optionalString(data, "currency"),
-		PurchasedAt:         optionalString(data, "purchased_at"),
-		ExpirationAt:        optionalString(data, "expiration_at"),
-		PresentedOfferingID: optionalString(data, "presented_offering_id"),
-		RevokedAt:           optionalString(data, "revoked_at"),
+		ID:                    optionalString(data, "id"),
+		TransactionID:         optionalString(data, "transaction_id"),
+		ProductID:             optionalString(data, "product_id"),
+		EntitlementIDs:        stringList(data["entitlement_ids"]),
+		Currency:              optionalString(data, "currency"),
+		PurchasedAt:           optionalString(data, "purchased_at"),
+		ExpirationAt:          optionalString(data, "expiration_at"),
+		PresentedOfferingID:   optionalString(data, "presented_offering_id"),
+		RevokedAt:             optionalString(data, "revoked_at"),
+		Environment:           optionalString(data, "environment"),
+		OriginalTransactionID: optionalString(data, "original_transaction_id"),
 	}
 	out.ExternalCustomerID, _ = data["external_customer_id"].(string)
 	out.Store, _ = data["store"].(string)

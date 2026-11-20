@@ -3,6 +3,7 @@
 - Customer access: `Customers().GetCustomer`, `ListCustomers(search, page, pageSize)` (at most 50 per page), `GetEntitlement`, `GrantPromotionalEntitlement`, `RevokePromotionalEntitlements`, `Alias`, `Transfer`, `SetAttributes`, `GetOfferings` and `CreateToken`.
 - Catalogue: `Entitlements()`, `Products()` and `Offerings()` managers.
 - `Subscriptions().ListRenewalPrompts` (paged) and `SendRenewalPrompt`.
+- `Subscriptions().Uncancel`; subscription webhook data adds `CancelReason`, `ExpirationReason`, `Environment`, `PresentedOfferingID`, `TransactionID`, `OriginalTransactionID`, `PreviousProductID` and `PreviousExpirationAt`; entitlement data adds `Environment` and `OriginalTransactionID`; events `subscription.uncancelled`, `subscription.product_changed` and `subscription.extended`.
 - `Metrics().Get`, `Experiments()` (`List`, `Create`, `Get`, `Stop`) and `Integrations()` (`List`, `Put`, `Delete`, `Test`).
 - Experiment offering IDs are null once the offering is deleted; the identifiers are kept, and results include `revenue_by_currency` per variant.
 - `PromotionalGrant` options carry `Duration` or `EndTime`.

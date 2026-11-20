@@ -158,6 +158,7 @@ subs.UpdatePlan("plan_123", &dto.CreateSubscriptionPlanRequestDto{Name: "Pro", A
 subs.DeletePlan("plan_123")
 subs.ListInvoices("sub_123", 1, 25) // all arguments optional ("" or 0)
 subs.Cancel(sub["subscription_id"].(string))
+subs.Uncancel(sub["subscription_id"].(string)) // undo a cancellation scheduled for the period end; 409 SUBSCRIPTION_ENDED, SUBSCRIPTION_NOT_SCHEDULED_TO_CANCEL or UNCANCEL_NOT_SUPPORTED
 ```
 
 `UpdatePlan` and `DeletePlan` send PUT and DELETE, so a custom HTTP client must also implement `http.Doer`. `InitiatePaymentRequestDto` and `CreateSubscriptionRequestDto` take an optional ISO alpha-2 `Country`; initiate also takes `CustomerName`. `Country` is returned on payments and `payment.*` webhooks.
@@ -266,7 +267,7 @@ client.Subscriptions().ListRenewalPrompts("sub_123", 1, 25) // same paging and r
 client.Subscriptions().SendRenewalPrompt("sub_123")
 ```
 
-`InitiatePaymentRequestDto` accepts `ProductID`, `ExternalCustomerID` and `PresentedOfferingID`. Webhooks add `subscription.billing_issue`, `customer.transferred` (`CustomerData()`), `purchase.completed`, `entitlement.granted`, `entitlement.revoked` and `entitlement.expired` (`EntitlementData()`).
+`InitiatePaymentRequestDto` accepts `ProductID`, `ExternalCustomerID` and `PresentedOfferingID`. Webhooks add `subscription.billing_issue`, `subscription.uncancelled`, `subscription.product_changed`, `subscription.extended`, `customer.transferred` (`CustomerData()`), `purchase.completed`, `entitlement.granted`, `entitlement.revoked` and `entitlement.expired` (`EntitlementData()`).
 
 ## Refunds, wallet withdrawals and checkout cancellation
 

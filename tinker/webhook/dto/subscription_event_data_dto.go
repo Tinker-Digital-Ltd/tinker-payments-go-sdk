@@ -19,6 +19,14 @@ type SubscriptionEventDataDto struct {
 	ExpirationAt            *string
 	GracePeriodExpirationAt *string
 	ExternalCustomerID      *string
+	CancelReason            *string
+	ExpirationReason        *string
+	Environment             *string
+	PresentedOfferingID     *string
+	TransactionID           *string
+	OriginalTransactionID   *string
+	PreviousProductID       *string
+	PreviousExpirationAt    *string
 }
 
 func NewSubscriptionEventDataDto(data map[string]interface{}) *SubscriptionEventDataDto {
@@ -66,6 +74,14 @@ func NewSubscriptionEventDataDto(data map[string]interface{}) *SubscriptionEvent
 	dto.ExpirationAt = optionalString(data, "expiration_at")
 	dto.GracePeriodExpirationAt = optionalString(data, "grace_period_expiration_at")
 	dto.ExternalCustomerID = optionalString(data, "external_customer_id")
+	dto.CancelReason = optionalString(data, "cancel_reason")
+	dto.ExpirationReason = optionalString(data, "expiration_reason")
+	dto.Environment = optionalString(data, "environment")
+	dto.PresentedOfferingID = optionalString(data, "presented_offering_id")
+	dto.TransactionID = optionalString(data, "transaction_id")
+	dto.OriginalTransactionID = optionalString(data, "original_transaction_id")
+	dto.PreviousProductID = optionalString(data, "previous_product_id")
+	dto.PreviousExpirationAt = optionalString(data, "previous_expiration_at")
 	return dto
 }
 
@@ -86,7 +102,7 @@ func (dto *SubscriptionEventDataDto) ToMap() map[string]interface{} {
 	if dto.ReactivatedAt != nil {
 		result["reactivated_at"] = *dto.ReactivatedAt
 	}
-	for key, value := range map[string]*string{"product_id": dto.ProductID, "store": dto.Store, "period_type": dto.PeriodType, "expiration_at": dto.ExpirationAt, "grace_period_expiration_at": dto.GracePeriodExpirationAt, "external_customer_id": dto.ExternalCustomerID} {
+	for key, value := range map[string]*string{"product_id": dto.ProductID, "store": dto.Store, "period_type": dto.PeriodType, "expiration_at": dto.ExpirationAt, "grace_period_expiration_at": dto.GracePeriodExpirationAt, "external_customer_id": dto.ExternalCustomerID, "cancel_reason": dto.CancelReason, "expiration_reason": dto.ExpirationReason, "environment": dto.Environment, "presented_offering_id": dto.PresentedOfferingID, "transaction_id": dto.TransactionID, "original_transaction_id": dto.OriginalTransactionID, "previous_product_id": dto.PreviousProductID, "previous_expiration_at": dto.PreviousExpirationAt} {
 		if value != nil {
 			result[key] = *value
 		}

@@ -48,6 +48,10 @@ func (sm *SubscriptionManager) Cancel(subscriptionID string) (map[string]interfa
 	return sm.request("POST", config.SUBSCRIPTION_BASE_PATH+"/"+subscriptionID+"/cancel", nil)
 }
 
+func (sm *SubscriptionManager) Uncancel(subscriptionID string) (map[string]interface{}, error) {
+	return sm.request("POST", config.SUBSCRIPTION_BASE_PATH+"/"+subscriptionID+"/uncancel", nil)
+}
+
 func (sm *SubscriptionManager) UpdatePlan(planID string, request *dto.CreateSubscriptionPlanRequestDto) (map[string]interface{}, error) {
 	return sm.request("PUT", config.SUBSCRIPTION_PLANS_PATH+"/"+url.PathEscape(planID), request.ToMap())
 }

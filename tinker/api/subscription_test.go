@@ -73,6 +73,16 @@ func TestSubscriptionManager_DeletePlan(t *testing.T) {
 	}
 }
 
+func TestSubscriptionManager_Uncancel(t *testing.T) {
+	manager, client := newPlanManager()
+	if _, err := manager.Uncancel("sub-1"); err != nil {
+		t.Fatal(err)
+	}
+	if client.method != "POST" || !strings.HasSuffix(client.url, "/merchant/subscriptions/sub-1/uncancel") || client.body != nil {
+		t.Fatalf("unexpected request %s %s %v", client.method, client.url, client.body)
+	}
+}
+
 func TestSubscriptionManager_ListInvoices(t *testing.T) {
 	manager, client := newPlanManager()
 	if _, err := manager.ListInvoices("sub-1", 2, 50); err != nil {
