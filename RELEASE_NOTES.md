@@ -1,5 +1,11 @@
-# Unreleased
+# v0.11.0 — Customer access
 
+- Customer access: `Customers().GetCustomer`, `ListCustomers(search, page, pageSize)` (at most 50 per page), `GetEntitlement`, `GrantPromotionalEntitlement`, `RevokePromotionalEntitlements`, `Alias`, `Transfer`, `SetAttributes`, `GetOfferings` and `CreateToken`.
+- Catalogue: `Entitlements()`, `Products()` and `Offerings()` managers.
+- `Subscriptions().ListRenewalPrompts` (paged) and `SendRenewalPrompt`.
+- `Metrics().Get`, `Experiments()` (`List`, `Create`, `Get`, `Stop`) and `Integrations()` (`List`, `Put`, `Delete`, `Test`).
+- Experiment offering IDs are null once the offering is deleted; the identifiers are kept, and results include `revenue_by_currency` per variant.
+- `PromotionalGrant` options carry `Duration` or `EndTime`.
 - `Subscriptions().UpdatePlan`, `DeletePlan` and `ListInvoices`. A custom `http.Client` must implement `http.Doer` for PUT and DELETE.
 - Optional `Country` on initiate and subscription create, `CustomerName` on initiate; `Country` on query, callback and `payment.*` webhook data and on `PaymentDetail`.
 - **Breaking:** `Transactions().Capabilities` returns `*model.PaymentCapabilities` (`Providers`), the shape of the API `data` object, not a slice.

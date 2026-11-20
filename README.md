@@ -237,6 +237,7 @@ Server-side access for one-time products and subscriptions, keyed by your own cu
 
 ```go
 customers := client.Customers()
+page, _ := customers.ListCustomers("cust", 1, 50) // search is a prefix of the customer ID or email; zero values omit an argument; at most 50 per page; returns items, total, page, page_size
 customer, _ := customers.GetCustomer("cust_123")
 pro, _ := customers.GetEntitlement("cust_123", "pro")
 if pro["is_active"] == true { /* grant access */ }
@@ -257,7 +258,7 @@ pro, _ := client.Entitlements().Create(api.Body{"identifier": "pro", "display_na
 client.Entitlements().AttachProducts(pro["id"].(string), []string{productID}) // also DetachProducts, List, Get, Update, Delete
 client.Products().Create(api.Body{"name": "Credit pack", "price": 5, "currency": "USD", "access_period": "P30D"}) // List, Get, Update
 client.Offerings().Create(api.Body{"identifier": "default", "is_current": true, "packages": []api.Body{{"identifier": "monthly", "product_id": productID}}}) // List, Get, Update, Delete
-client.Experiments().Create(api.Body{"name": "Price test", "control_offering_id": a, "treatment_offering_id": b}) // List, Get, Stop
+client.Experiments().Create(api.Body{"name": "Price test", "control_offering_id": a, "treatment_offering_id": b}) // List, Get, Stop; an experiment's offering IDs are nil once the offering is deleted, and results include revenue_by_currency per variant
 client.Integrations().Put("slack", api.Body{"secret": webhookURL, "enabled": true}) // List, Delete, Test (kind: slack, segment, mixpanel)
 client.Metrics().Get("2026-01-01", "2026-01-31") // both dates optional ("")
 client.Subscriptions().ListInvoices("sub_123", 1, 25) // all arguments optional ("" or 0); returns items, total, page, page_size

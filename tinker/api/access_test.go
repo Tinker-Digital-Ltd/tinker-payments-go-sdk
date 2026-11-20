@@ -28,6 +28,8 @@ func TestAccessManagers(t *testing.T) {
 		method, path string
 		body         bool
 	}{
+		{"customers list", func() error { _, e := customers.ListCustomers("", 0, 0); return e }, "GET", "merchant/customers", false},
+		{"customers list paged", func() error { _, e := customers.ListCustomers("a b", 2, 50); return e }, "GET", "merchant/customers?page=2&page_size=50&search=a+b", false},
 		{"customer get", func() error { _, e := customers.GetCustomer("u/1"); return e }, "GET", "merchant/customers/u%2F1", false},
 		{"get entitlement", func() error { _, e := customers.GetEntitlement("u1", "pro"); return e }, "GET", "merchant/customers/u1/entitlements/pro", false},
 		{"grant", func() error {

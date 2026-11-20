@@ -36,6 +36,24 @@ func customerPath(id, suffix string) string {
 	return config.CUSTOMERS_PATH + "/" + url.PathEscape(id) + suffix
 }
 
+func (m *CustomerManager) ListCustomers(search string, page, pageSize int) (Body, error) {
+	q := url.Values{}
+	if search != "" {
+		q.Set("search", search)
+	}
+	if page > 0 {
+		q.Set("page", strconv.Itoa(page))
+	}
+	if pageSize > 0 {
+		q.Set("page_size", strconv.Itoa(pageSize))
+	}
+	endpoint := config.CUSTOMERS_PATH
+	if len(q) > 0 {
+		endpoint += "?" + q.Encode()
+	}
+	return m.request("GET", endpoint, nil)
+}
+
 func (m *CustomerManager) GetCustomer(id string) (Body, error) {
 	return m.request("GET", customerPath(id, ""), nil)
 }
